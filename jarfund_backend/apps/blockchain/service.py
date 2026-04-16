@@ -63,16 +63,29 @@ class BlockchainService:
     def __init__(self):
         from django.conf import settings
         self._settings        = settings.BLOCKCHAIN
-        self._rpc_url         = self._settings.get("POLYGON_AMOY_RPC_URL", "")
+        self._network_name    = self._settings.get("NETWORK_NAME", "amoy").lower()
+        self._rpc_url         = self._select_rpc_url()
         self._contract_addr   = self._settings.get("CONTRACT_ADDRESS", "")
         self._chain_id        = self._settings.get("CHAIN_ID", 80002)
         self._required_confs  = self._settings.get("REQUIRED_CONFIRMATIONS", 3)
-        self._explorer_url    = self._settings.get("EXPLORER_URL", "https://amoy.polygonscan.com")
+        self._explorer_url    = self._settings.get(
+            "EXPLORER_URL",
+            "https://polygonscan.com" if self._network_name == "polygon"
+            else "https://amoy.polygonscan.com",
+        )
 
         if not self._rpc_url:
-            raise RPCConnectionError("POLYGON_AMOY_RPC_URL is not configured in settings.")
+            raise RPCConnectionError(
+                f"RPC URL is not configured for network '{self._network_name}'."
+            )
 
         self._w3: Web3 | None = None
+
+    def _select_rpc_url(self) -> str:
+        """Choose the correct RPC URL for the configured network."""
+        if self._network_name == "polygon":
+            return self._settings.get("POLYGON_MAINNET_RPC_URL", "")
+        return self._settings.get("POLYGON_AMOY_RPC_URL", "")
 
     # ─────────────────────────────────────────────────────────────
     #  CONNECTION

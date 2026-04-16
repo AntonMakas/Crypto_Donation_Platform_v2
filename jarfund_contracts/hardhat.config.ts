@@ -8,6 +8,10 @@ const AMOY_RPC_URL = process.env.AMOY_RPC_URL ?? "http://127.0.0.1:8545";
 const AMOY_PRIVATE_KEY =
   process.env.AMOY_PRIVATE_KEY ??
   "0x0000000000000000000000000000000000000000000000000000000000000001";
+const POLYGON_RPC_URL = process.env.POLYGON_RPC_URL ?? "https://polygon-rpc.com";
+const POLYGON_PRIVATE_KEY =
+  process.env.POLYGON_PRIVATE_KEY ??
+  "0x0000000000000000000000000000000000000000000000000000000000000001";
 
 export default defineConfig({
   plugins: [hardhatToolboxMochaEthersPlugin],
@@ -42,6 +46,13 @@ export default defineConfig({
       url: AMOY_RPC_URL,
       accounts: [AMOY_PRIVATE_KEY],
       chainId: 80002,
+    },
+    polygon: {
+      type: "http",
+      chainType: "l1",
+      url: POLYGON_RPC_URL,
+      accounts: [POLYGON_PRIVATE_KEY],
+      chainId: 137,
     },
   },
 });
