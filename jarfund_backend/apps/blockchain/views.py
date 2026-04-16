@@ -113,6 +113,35 @@ class TxStatusView(APIView):
         donation = Donation.objects.filter(tx_hash=tx_hash).first()
         if donation:
             explorer = settings.BLOCKCHAIN.get("EXPLORER_URL", "https://amoy.polygonscan.com")
+            if donation.tx_status == TxStatus.PENDING:
+                try:
+                    from apps.blockchain.service import BlockchainService
+                    from apps.blockchain.tasks import verify_single_transaction
+
+                    svc = BlockchainService()
+                    receipt = svc.get_receipt(tx_hash)
+                    if receipt:
+                        verify_single_transaction.apply_async(args=[tx_hash], countdown=0)
+                        data = {
+                            "tx_hash":        tx_hash,
+                            "status":         "confirmed" if receipt["status"] == 1 else "failed",
+                            "is_verified":    receipt["status"] == 1,
+                            "block_number":   receipt["blockNumber"],
+                            "confirmations":  svc.get_confirmations(receipt["blockNumber"]),
+                            "gas_used":       receipt["gasUsed"],
+                            "gas_price_gwei": donation.gas_price_gwei,
+                            "verified_at":    donation.verified_at,
+                            "explorer_url":   f"{explorer}/tx/{tx_hash}",
+                            "source":         "rpc_pending_db",
+                        }
+                        return Response({"success": True, "data": data})
+                except Exception as exc:
+                    logger.warning(
+                        "Pending donation live receipt check failed for tx %s: %s",
+                        tx_hash[:12],
+                        exc,
+                    )
+
             data = {
                 "tx_hash":        tx_hash,
                 "status":         donation.tx_status,

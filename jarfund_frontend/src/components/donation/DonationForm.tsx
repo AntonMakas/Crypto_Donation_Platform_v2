@@ -11,7 +11,7 @@ import toast                 from 'react-hot-toast'
 import { useAuth }           from '@/contexts/AuthContext'
 import { useSubmitDonation } from '@/hooks/useQueries'
 import { InlineSpinner }     from '@/components/ui/PageSpinner'
-import { extractApiError }   from '@/lib/api'
+import { blockchainApi, extractApiError }   from '@/lib/api'
 import { CONTRACT_ADDRESS, MIN_DONATION_MATIC, CHAIN_ID, EXPLORER_URL } from '@/lib/constants'
 import { JARFUND_ABI }       from '@/lib/wagmi'
 import { maticToWeiString, formatMatic }         from '@/utils/format'
@@ -58,13 +58,16 @@ export default function DonationForm({ jar }: DonationFormProps) {
 
   useEffect(() => {
     if (!receipt || step !== 'pending') return
+    if (pendingTxHash && backendRecorded) {
+      void blockchainApi.verify(pendingTxHash).catch(() => undefined)
+    }
     setStep('done')
     if (backendRecorded) {
       toast.success('Donation confirmed on-chain!')
     } else {
       toast.error('Donation confirmed on-chain, but backend recording failed.')
     }
-  }, [receipt, step, backendRecorded])
+  }, [receipt, step, backendRecorded, pendingTxHash])
 
   const onSubmit = async (values: FormValues) => {
     if (!address || !isAuthenticated) return
