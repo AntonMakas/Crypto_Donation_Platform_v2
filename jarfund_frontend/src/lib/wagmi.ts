@@ -9,6 +9,9 @@ import { injected, walletConnect } from 'wagmi/connectors'
 import { defineChain } from 'viem'
 import { WALLETCONNECT_PROJECT_ID, RPC_URL } from '@/lib/constants'
 
+const AMOY_RPC = RPC_URL || 'https://rpc-amoy.polygon.technology'
+const POLYGON_MAINNET_RPC = RPC_URL || 'https://polygon-bor-rpc.publicnode.com'
+
 // ── Define Polygon Amoy testnet ───────────────────────────────────
 
 export const polygonAmoy = defineChain({
@@ -16,7 +19,7 @@ export const polygonAmoy = defineChain({
   name: 'Polygon Amoy',
   nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
   rpcUrls: {
-    default: { http: [RPC_URL || 'https://rpc-amoy.polygon.technology'] },
+    default: { http: [AMOY_RPC] },
   },
   blockExplorers: {
     default: { name: 'PolygonScan', url: 'https://amoy.polygonscan.com' },
@@ -29,7 +32,7 @@ export const polygonMainnet = defineChain({
   name: 'Polygon',
   nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://polygon-rpc.com'] },
+    default: { http: [POLYGON_MAINNET_RPC] },
   },
   blockExplorers: {
     default: { name: 'PolygonScan', url: 'https://polygonscan.com' },
@@ -51,8 +54,8 @@ export const wagmiConfig = createConfig({
   chains:     [polygonAmoy, polygonMainnet],
   connectors,
   transports: {
-    [polygonAmoy.id]:     http(RPC_URL || 'https://rpc-amoy.polygon.technology'),
-    [polygonMainnet.id]:  http('https://polygon-rpc.com'),
+    [polygonAmoy.id]:     http(AMOY_RPC),
+    [polygonMainnet.id]:  http(POLYGON_MAINNET_RPC),
   },
 })
 
