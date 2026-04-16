@@ -121,10 +121,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signature = await signMessageAsync({ message })
       } catch (err: unknown) {
         const msg = (err as Error)?.message ?? ''
+        console.error('Wallet signing failed:', err)
         if (msg.includes('User rejected') || msg.includes('denied')) {
           toast.error('Signature cancelled.')
         } else {
-          toast.error('Signing failed. Please try again.')
+          toast.error(msg || 'Signing failed. Please try again.')
         }
         setStatus('idle')
         return
