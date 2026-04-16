@@ -1,0 +1,66 @@
+# docker-compose.yml
+# Spins up PostgreSQL and Redis for local development.
+# The Django app itself runs directly on your host (not in Docker).
+#
+# Usage:
+#   docker compose up -d          # Start services
+#   docker compose down           # Stop services
+#   docker compose down -v        # Stop AND wipe data volumes
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: jarfund_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       jarfund_db
+      POSTGRES_USER:     jarfund
+      POSTGRES_PASSWORD: jarfund_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jarfund -d jarfund_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: jarfund_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── pgAdmin (optional DB GUI) ────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: jarfund_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    admin@jarfund.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    profiles:
+      - dev-tools   # Only starts with: docker compose --profile dev-tools up
+
+volumes:
+  postgres_data:
+  redis_data:

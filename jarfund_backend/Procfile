@@ -1,0 +1,11 @@
+# Procfile — Process definitions for Railway, Heroku, or Render
+#
+# Railway will auto-detect this file and run the web process.
+# For Celery, add a separate "worker" service in Railway dashboard
+# with the command: celery -A config.celery worker --loglevel=info
+
+web:    gunicorn config.wsgi:application --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT --log-level info
+
+worker: celery -A config.celery worker --loglevel=info --concurrency=2
+
+beat:   celery -A config.celery beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler

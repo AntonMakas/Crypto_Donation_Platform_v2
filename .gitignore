@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+**/node_modules/
+**/dist/
+**/.venv/
+**/venv/
+**/__pycache__/
+**/artifacts/
+**/cache/
+**/types/
+**/staticfiles/
+**/media/
