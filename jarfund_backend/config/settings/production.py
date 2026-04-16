@@ -39,7 +39,17 @@ SECURE_REFERRER_POLICY         = "strict-origin-when-cross-origin"
 # ─────────────────────────────────────────────────────────────────
 #  CORS — only allow the actual frontend domain
 # ─────────────────────────────────────────────────────────────────
-CORS_ALLOWED_ORIGINS = [origin.rstrip('/') for origin in env.list("CORS_ALLOWED_ORIGINS")]
+# Get CORS origins from environment, with fallback to base defaults
+_cors_origins = env.list("CORS_ALLOWED_ORIGINS", default=[])
+if not _cors_origins:
+    # Fallback to base.py defaults if env var is empty
+    from .base import CORS_ALLOWED_ORIGINS as BASE_CORS
+    _cors_origins = BASE_CORS
+else:
+    # Normalize: strip trailing slashes from each origin
+    _cors_origins = [origin.rstrip('/') for origin in _cors_origins]
+
+CORS_ALLOWED_ORIGINS = _cors_origins
 CORS_ALLOW_ALL_ORIGINS = False
 
 
