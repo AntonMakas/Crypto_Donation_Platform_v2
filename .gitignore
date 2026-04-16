@@ -8,6 +8,5 @@
 **/__pycache__/
 **/artifacts/
 **/cache/
-**/types/
 **/staticfiles/
 **/media/
