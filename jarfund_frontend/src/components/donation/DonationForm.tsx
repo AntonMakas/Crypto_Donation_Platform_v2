@@ -1,18 +1,18 @@
-import { useState }        from 'react'
+import { useEffect, useState }        from 'react'
 import { useForm }          from 'react-hook-form'
 import { zodResolver }      from '@hookform/resolvers/zod'
 import { z }                from 'zod'
 import { Wallet, Heart, EyeOff, AlertCircle } from 'lucide-react'
-import { useAccount, useConnect, useWriteContract } from 'wagmi'
+import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseEther }        from 'viem'
 import { injected }          from 'wagmi/connectors'
 import toast                 from 'react-hot-toast'
 
 import { useAuth }           from '@/contexts/AuthContext'
 import { useSubmitDonation } from '@/hooks/useQueries'
-import TxStatusBanner        from '@/components/blockchain/TxStatusBanner'
 import { InlineSpinner }     from '@/components/ui/PageSpinner'
-import { CONTRACT_ADDRESS, MIN_DONATION_MATIC } from '@/lib/constants'
+import { extractApiError }   from '@/lib/api'
+import { CONTRACT_ADDRESS, MIN_DONATION_MATIC, CHAIN_ID, EXPLORER_URL } from '@/lib/constants'
 import { JARFUND_ABI }       from '@/lib/wagmi'
 import { maticToWeiString, formatMatic }         from '@/utils/format'
 import type { Jar }          from '@/types'
@@ -36,12 +36,18 @@ interface DonationFormProps {
 export default function DonationForm({ jar }: DonationFormProps) {
   const [pendingTxHash, setPendingTxHash] = useState<string | null>(null)
   const [step, setStep] = useState<'form' | 'pending' | 'done'>('form')
+  const [backendRecorded, setBackendRecorded] = useState(false)
+  const [backendError, setBackendError] = useState<string | null>(null)
 
   const { isAuthenticated, signIn, isLoading: authLoading } = useAuth()
   const { address, isConnected } = useAccount()
   const { connect }              = useConnect()
   const { writeContractAsync }   = useWriteContract()
   const submitDonation           = useSubmitDonation()
+  const { data: receipt, isLoading: waitingForReceipt } = useWaitForTransactionReceipt({
+    hash: pendingTxHash as `0x${string}` | undefined,
+    chainId: CHAIN_ID,
+  })
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -49,6 +55,16 @@ export default function DonationForm({ jar }: DonationFormProps) {
   })
 
   const amount = watch('amount')
+
+  useEffect(() => {
+    if (!receipt || step !== 'pending') return
+    setStep('done')
+    if (backendRecorded) {
+      toast.success('Donation confirmed on-chain!')
+    } else {
+      toast.error('Donation confirmed on-chain, but backend recording failed.')
+    }
+  }, [receipt, step, backendRecorded])
 
   const onSubmit = async (values: FormValues) => {
     if (!address || !isAuthenticated) return
@@ -64,6 +80,10 @@ export default function DonationForm({ jar }: DonationFormProps) {
         toast.error('This jar is not linked on-chain yet.')
         return
       }
+      if (address.toLowerCase() === jar.creator_wallet.toLowerCase()) {
+        toast.error('Jar creators cannot donate to their own jar.')
+        return
+      }
 
       const txHash = await writeContractAsync({
         address: CONTRACT_ADDRESS as `0x${string}`,
@@ -75,20 +95,27 @@ export default function DonationForm({ jar }: DonationFormProps) {
 
       setPendingTxHash(txHash)
       setStep('pending')
+      setBackendRecorded(false)
+      setBackendError(null)
 
       // 2. Record in backend
-      await submitDonation.mutateAsync({
-        jar_id:       jar.id,
-        donor_wallet: address,
-        amount_matic: values.amount,
-        amount_wei:   maticToWeiString(values.amount),
-        tx_hash:      txHash,
-        message:      values.message ?? '',
-        is_anonymous: values.is_anonymous ?? false,
-      })
-
-      setStep('done')
-      toast.success('Donation submitted! Verification in progress.')
+      try {
+        await submitDonation.mutateAsync({
+          jar_id:       jar.id,
+          donor_wallet: address,
+          amount_matic: values.amount,
+          amount_wei:   maticToWeiString(values.amount),
+          tx_hash:      txHash,
+          message:      values.message ?? '',
+          is_anonymous: values.is_anonymous ?? false,
+        })
+        setBackendRecorded(true)
+        toast.success('Donation submitted! Verification in progress.')
+      } catch (submitErr) {
+        const message = extractApiError(submitErr)
+        setBackendError(message)
+        toast.error(message)
+      }
 
     } catch (err: unknown) {
       const msg = (err as Error)?.message ?? ''
@@ -145,8 +172,23 @@ export default function DonationForm({ jar }: DonationFormProps) {
   // Done state
   if (step === 'done' && pendingTxHash) {
     return (
-      <div className="space-y-4">
-        <TxStatusBanner txHash={pendingTxHash} label="Donation" />
+      <div className="glass-panel p-6 space-y-4 text-center">
+        <p className="font-display font-semibold text-text-primary">
+          {receipt ? 'Donation confirmed on-chain' : 'Donation submitted'}
+        </p>
+        <p className="text-sm text-text-muted">
+          {backendRecorded
+            ? 'Your donation has been recorded and will be verified by the backend shortly.'
+            : backendError ?? 'The blockchain transaction succeeded, but the backend could not record it automatically.'}
+        </p>
+        <a
+          href={`${EXPLORER_URL}/tx/${pendingTxHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-secondary w-full"
+        >
+          View on PolygonScan
+        </a>
         <button onClick={() => { setStep('form'); setPendingTxHash(null) }}
           className="btn-ghost text-sm w-full">
           Donate again
@@ -160,7 +202,25 @@ export default function DonationForm({ jar }: DonationFormProps) {
 
       {/* Pending tx */}
       {step === 'pending' && pendingTxHash && (
-        <TxStatusBanner txHash={pendingTxHash} label="Donation" />
+        <div className="glass-panel p-4 text-sm text-text-muted text-center space-y-2">
+          <p className="font-medium text-text-primary">Donation transaction submitted</p>
+          <p>
+            {waitingForReceipt
+              ? 'Waiting for block confirmation...'
+              : 'Waiting for the transaction receipt...'}
+          </p>
+          <a
+            href={`${EXPLORER_URL}/tx/${pendingTxHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-300 hover:text-primary-200 transition-colors"
+          >
+            View live on PolygonScan
+          </a>
+          {backendError && (
+            <p className="text-danger text-xs">{backendError}</p>
+          )}
+        </div>
       )}
 
       {/* Amount */}
