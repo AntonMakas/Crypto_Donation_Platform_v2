@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
 import { ExternalLink, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
-import { WalletAddress, TxLink } from '@/components/ui/PageSpinner'
+import { WalletAddress } from '@/components/ui/PageSpinner'
 import { formatMatic, timeAgo, explorerTxUrl } from '@/utils/format'
-import type { Donation } from '@/types'
+import type { Donation, TxStatus } from '@/types'
 
 interface DonationRowProps {
   donation: Donation
@@ -10,7 +10,7 @@ interface DonationRowProps {
   showJar?: boolean
 }
 
-const STATUS_ICON = {
+const STATUS_ICON: Record<TxStatus, JSX.Element> = {
   confirmed: <CheckCircle2 size={13} className="text-success" />,
   pending:   <Loader2     size={13} className="text-info animate-spin" />,
   failed:    <XCircle     size={13} className="text-danger/70" />,

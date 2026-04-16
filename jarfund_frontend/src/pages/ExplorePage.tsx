@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useInfiniteQuery }       from '@tanstack/react-query'
 import { motion }                 from 'framer-motion'
-import { Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 
 import JarCard        from '@/components/jar/JarCard'
 import CategoryFilter from '@/components/jar/CategoryFilter'
@@ -10,7 +10,7 @@ import { jarsApi }    from '@/lib/api'
 import { QUERY_KEYS, DEFAULT_PAGE_SIZE } from '@/lib/constants'
 import { useDebounce } from '@/hooks/useUtils'
 import { cn }          from '@/utils/format'
-import type { JarCategory, JarStatus } from '@/types'
+import type { Jar, JarCategory, JarStatus, PaginatedResponse } from '@/types'
 
 const SORT_OPTIONS = [
   { value: '-created_at',        label: 'Newest'       },
@@ -48,17 +48,17 @@ export default function ExplorePage() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<PaginatedResponse<Jar>>({
     queryKey:  [...QUERY_KEYS.JARS, 'infinite', queryParams],
     queryFn:   ({ pageParam = 1 }) =>
       jarsApi.list({ ...queryParams, page: pageParam }),
     initialPageParam: 1,
-    getNextPageParam: (last: { total_pages: number }, allPages: unknown[]) =>
+    getNextPageParam: (last, allPages) =>
       allPages.length < last.total_pages ? allPages.length + 1 : undefined,
     staleTime: 30_000,
   })
 
-  const allJars    = data?.pages.flatMap((p: { results: unknown[] }) => p.results) ?? []
+  const allJars    = data?.pages.flatMap((p) => p.results) ?? []
   const totalCount = data?.pages[0]?.count ?? 0
   const hasFilters = debouncedSearch || category !== 'all' || status !== 'all'
 
@@ -198,8 +198,8 @@ export default function ExplorePage() {
       ) : (
         <>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {allJars.map((jar: unknown, i: number) => (
-              <JarCard key={(jar as { id: number }).id} jar={jar as Parameters<typeof JarCard>[0]['jar']} index={i % DEFAULT_PAGE_SIZE} />
+            {allJars.map((jar, i) => (
+              <JarCard key={jar.id} jar={jar} index={i % DEFAULT_PAGE_SIZE} />
             ))}
           </div>
 

@@ -133,14 +133,6 @@ apiClient.interceptors.response.use(
 // ── Typed response unwrapper ──────────────────────────────────────
 
 /**
- * Unwraps the { success, data } envelope from every API response.
- * Throws a normalised ApiError on failure.
- */
-function unwrap<T>(response: AxiosResponse<{ success: true; data: T }>): T {
-  return response.data.data
-}
-
-/**
  * Extract a human-readable error message from an axios error.
  */
 export function extractApiError(err: unknown): string {
@@ -164,7 +156,7 @@ export function extractFieldErrors(err: unknown): Record<string, string> {
     const data = err.response?.data as ApiError | undefined
     if (data?.error?.details) {
       return Object.fromEntries(
-        Object.entries(data.error.details).map(([k, v]) => [k, v[0]])
+        Object.entries(data.error.details).map(([k, v]) => [k, Array.isArray(v) ? v[0] : String(v)])
       )
     }
   }

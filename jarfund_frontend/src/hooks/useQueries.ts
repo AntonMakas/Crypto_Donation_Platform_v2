@@ -21,13 +21,14 @@ import type {
   Donation,
   DonationCreatePayload,
   PlatformStats,
+  PaginatedResponse,
 } from '@/types'
 
 // ── JAR HOOKS ─────────────────────────────────────────────────────
 
 /** Paginated jar list with filtering + search */
 export function useJars(filters?: JarFilters) {
-  return useQuery({
+  return useQuery<PaginatedResponse<Jar>>({
     queryKey: [...QUERY_KEYS.JARS, filters],
     queryFn:  () => jarsApi.list(filters as Record<string, unknown>),
     staleTime: 30_000,
@@ -36,12 +37,12 @@ export function useJars(filters?: JarFilters) {
 
 /** Infinite-scroll jar list (for Explore page) */
 export function useInfiniteJars(filters?: Omit<JarFilters, 'page'>) {
-  return useInfiniteQuery({
+  return useInfiniteQuery<PaginatedResponse<Jar>>({
     queryKey:  [...QUERY_KEYS.JARS, 'infinite', filters],
     queryFn:   ({ pageParam = 1 }) =>
       jarsApi.list({ ...filters, page: pageParam, page_size: DEFAULT_PAGE_SIZE }),
     initialPageParam: 1,
-    getNextPageParam: (last: { total_pages: number }, allPages: unknown[]) =>
+    getNextPageParam: (last, allPages) =>
       allPages.length < last.total_pages ? allPages.length + 1 : undefined,
     staleTime: 30_000,
   })
@@ -60,7 +61,7 @@ export function useJar(id: number | null) {
 
 /** Jars created by the current user */
 export function useMyJars() {
-  return useQuery({
+  return useQuery<PaginatedResponse<Jar>>({
     queryKey: QUERY_KEYS.MY_JARS,
     queryFn:  () => jarsApi.myJars(),
     staleTime: 60_000,

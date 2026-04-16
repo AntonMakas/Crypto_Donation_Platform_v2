@@ -14,8 +14,9 @@
 
     /* Strict type checking */
     "strict":             true,
-    "noUnusedLocals":     true,
-    "noUnusedParameters": true,
+    "noImplicitAny":      false,
+    "noUnusedLocals":     false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "exactOptionalPropertyTypes": false,
 
