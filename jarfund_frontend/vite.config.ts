@@ -37,6 +37,10 @@ export default defineConfig({
     },
   },
 
+  preview: {
+    allowedHosts: ['.up.railway.app'],
+  },
+
   build: {
     outDir:       'dist',
     sourcemap:    true,
