@@ -93,6 +93,12 @@ REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {  # noqa: F405
     "create_jar": "5/minute",
 }
 
+# The browsable API pulls DRF static assets. In Railway production we don't
+# rely on that HTML UI, and keeping JSON-only avoids manifest/staticfile 500s.
+REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
+    "rest_framework.renderers.JSONRenderer",
+]
+
 
 # ─────────────────────────────────────────────────────────────────
 #  ADMIN URL — obscure in production

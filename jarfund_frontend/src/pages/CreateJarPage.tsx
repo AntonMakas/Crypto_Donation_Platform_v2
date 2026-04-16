@@ -1,4 +1,4 @@
-import { useState }         from 'react'
+import { useCallback, useEffect, useRef, useState }         from 'react'
 import { useNavigate }       from 'react-router-dom'
 import { useForm }           from 'react-hook-form'
 import { zodResolver }       from '@hookform/resolvers/zod'
@@ -14,7 +14,15 @@ import { useAuth }           from '@/contexts/AuthContext'
 import { useCreateJar, useConfirmJar } from '@/hooks/useQueries'
 import { InlineSpinner }     from '@/components/ui/PageSpinner'
 import TxStatusBanner        from '@/components/blockchain/TxStatusBanner'
-import { JAR_CATEGORIES, ROUTES, MAX_TITLE_LENGTH, MAX_DESCRIPTION_LENGTH, CONTRACT_ADDRESS } from '@/lib/constants'
+import {
+  JAR_CATEGORIES,
+  ROUTES,
+  MAX_TITLE_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  CONTRACT_ADDRESS,
+  CHAIN_ID,
+  CHAIN_NAME,
+} from '@/lib/constants'
 import { JARFUND_ABI }       from '@/lib/wagmi'
 import { cn }                from '@/utils/format'
 import type { JarCategory }  from '@/types'
@@ -44,7 +52,7 @@ export default function CreateJarPage() {
   const [step, setStep] = useState(1)
   const [createdJarId, setCreatedJarId] = useState<number | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
-  const [onChainJarId, setOnChainJarId] = useState<number | null>(null)
+  const autoConfirmStarted = useRef(false)
 
   const { isAuthenticated, isLoading: authLoading, signIn } = useAuth()
   const { address, isConnected }   = useAccount()
@@ -55,6 +63,7 @@ export default function CreateJarPage() {
   const { writeContractAsync }     = useWriteContract()
   const { data: receipt, isLoading: waitingForReceipt } = useWaitForTransactionReceipt({
     hash: txHash as `0x${string}` | undefined,
+    chainId: CHAIN_ID,
   })
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormValues>({
@@ -141,7 +150,7 @@ export default function CreateJarPage() {
 
   // ── Step 3: Confirm once receipt arrives ──────────────────────
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     if (!receipt || !createdJarId || !txHash) return
 
     let jarIdFromEvent: number | null = null
@@ -178,7 +187,13 @@ export default function CreateJarPage() {
     } catch {
       toast.error('Confirmation failed.')
     }
-  }
+  }, [receipt, createdJarId, txHash, confirmJar, navigate])
+
+  useEffect(() => {
+    if (!receipt || confirmJar.isPending || autoConfirmStarted.current) return
+    autoConfirmStarted.current = true
+    void handleConfirm()
+  }, [receipt, confirmJar.isPending, handleConfirm])
 
   const minDeadline = new Date(Date.now() + 3_600_000).toISOString().slice(0, 16)
   const maxDeadline = new Date(Date.now() + 365 * 86_400_000).toISOString().slice(0, 16)
@@ -321,7 +336,7 @@ export default function CreateJarPage() {
                   { k: 'Title',    v: watch('title') },
                   { k: 'Target',   v: `${watch('target_amount_matic')} MATIC` },
                   { k: 'Deadline', v: watch('deadline') ? new Date(watch('deadline')).toLocaleDateString() : '—' },
-                  { k: 'Network',  v: 'Polygon Amoy (testnet)' },
+                  { k: 'Network',  v: CHAIN_NAME === 'polygon' ? 'Polygon Mainnet' : 'Polygon Amoy (testnet)' },
                 ].map(({ k, v }) => (
                   <div key={k} className="flex justify-between">
                     <span className="text-text-muted">{k}</span>
