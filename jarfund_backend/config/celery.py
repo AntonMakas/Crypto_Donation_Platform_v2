@@ -17,6 +17,7 @@ Flower monitoring (optional):
 """
 import os
 from celery import Celery
+from kombu import Exchange, Queue
 
 # Default to local settings in dev
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
@@ -28,6 +29,16 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Autodiscover tasks in all INSTALLED_APPS
 app.autodiscover_tasks()
+
+# Belt-and-suspenders: declare the default queue at the app level so Kombu
+# binds the worker to it before any task is dispatched, regardless of the
+# order in which Django settings are loaded.
+app.conf.task_default_queue = "celery"
+app.conf.task_default_exchange = "celery"
+app.conf.task_default_routing_key = "celery"
+app.conf.task_queues = (
+    Queue("celery", Exchange("celery"), routing_key="celery"),
+)
 
 
 @app.task(bind=True, ignore_result=True)
