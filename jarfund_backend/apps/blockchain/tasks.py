@@ -125,7 +125,7 @@ def verify_single_transaction(self, tx_hash: str):
     from .service import BlockchainService
     from .processor import ReceiptProcessor
 
-    logger.debug("verify_single_transaction: %s (attempt %d)", tx_hash[:14], self.request.retries + 1)
+    logger.info("verify_single_transaction: starting tx=%s (attempt %d)", tx_hash[:14], self.request.retries + 1)
 
     # ── Fetch donation ───────────────────────────────────────────
     try:
