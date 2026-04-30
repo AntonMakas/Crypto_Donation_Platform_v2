@@ -151,9 +151,6 @@ function JarDetail({ jar }: { jar: Jar }) {
                 <button onClick={handleWithdraw} className="btn-primary w-full">
                   Withdraw Funds
                 </button>
-                <p className="text-xs text-text-muted text-center mt-2">
-                  You'll receive funds minus 1% platform fee
-                </p>
               </div>
             )}
           </motion.div>

@@ -26,11 +26,7 @@ contract JarFund {
     uint256 public constant MIN_DONATION = 0.001 ether;
     uint256 public constant MIN_DURATION = 1 hours;
     uint256 public constant MAX_DURATION = 365 days;
-    uint256 public constant MAX_PLATFORM_FEE_BPS = 1_000;
-
     uint256 public totalJars;
-    uint256 public platformFeeBps;
-    uint256 public accumulatedFees;
     address public owner;
 
     mapping(uint256 => Jar) private jars;
@@ -55,24 +51,18 @@ contract JarFund {
 
     event FundsWithdrawn(uint256 indexed jarId, address indexed creator, uint256 amount, uint256 timestamp);
     event JarStatusChanged(uint256 indexed jarId, JarStatus oldStatus, JarStatus newStatus);
-    event PlatformFeeUpdated(uint256 oldBps, uint256 newBps);
-    event FeesCollected(address indexed collector, uint256 amount);
-
     error JarNotFound();
     error NotCreator();
     error NotOwner();
     error InvalidTarget();
     error InvalidDeadline();
     error InvalidDonation();
-    error InvalidPlatformFee();
     error JarNotActive();
     error CannotWithdrawYet();
     error TransferFailed();
 
-    constructor(uint256 _feeBps) {
-        if (_feeBps > MAX_PLATFORM_FEE_BPS) revert InvalidPlatformFee();
+    constructor() {
         owner = msg.sender;
-        platformFeeBps = _feeBps;
     }
 
     function createJar(
@@ -133,19 +123,15 @@ contract JarFund {
         if (!canWithdraw(jarId)) revert CannotWithdrawYet();
 
         uint256 amount = jar.amountRaised;
-        uint256 fee = (amount * platformFeeBps) / 10_000;
-        uint256 creatorAmount = amount - fee;
-
         jar.amountRaised = 0;
         JarStatus oldStatus = jar.status;
         jar.status = JarStatus.Withdrawn;
-        accumulatedFees += fee;
 
-        (bool success, ) = payable(msg.sender).call{value: creatorAmount}("");
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
         if (!success) revert TransferFailed();
 
         emit JarStatusChanged(jarId, oldStatus, JarStatus.Withdrawn);
-        emit FundsWithdrawn(jarId, msg.sender, creatorAmount, block.timestamp);
+        emit FundsWithdrawn(jarId, msg.sender, amount, block.timestamp);
     }
 
     function getJar(uint256 jarId) external view returns (Jar memory) {
@@ -183,27 +169,6 @@ contract JarFund {
     function getDonorAmount(uint256 jarId, address donor) external view returns (uint256) {
         if (jars[jarId].id == 0) revert JarNotFound();
         return donations[jarId][donor];
-    }
-
-    function setPlatformFee(uint256 _newFeeBps) external {
-        if (msg.sender != owner) revert NotOwner();
-        if (_newFeeBps > MAX_PLATFORM_FEE_BPS) revert InvalidPlatformFee();
-
-        uint256 oldBps = platformFeeBps;
-        platformFeeBps = _newFeeBps;
-        emit PlatformFeeUpdated(oldBps, _newFeeBps);
-    }
-
-    function collectFees() external {
-        if (msg.sender != owner) revert NotOwner();
-
-        uint256 amount = accumulatedFees;
-        accumulatedFees = 0;
-
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
-        if (!success) revert TransferFailed();
-
-        emit FeesCollected(msg.sender, amount);
     }
 
     function transferOwnership(address _newOwner) external {

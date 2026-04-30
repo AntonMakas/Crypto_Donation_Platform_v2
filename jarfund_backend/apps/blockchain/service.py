@@ -365,8 +365,6 @@ class BlockchainService:
             "DonationReceived",
             "FundsWithdrawn",
             "JarStatusChanged",
-            "PlatformFeeUpdated",
-            "FeesCollected",
         ]
 
         for event_name in event_names:

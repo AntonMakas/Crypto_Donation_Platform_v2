@@ -24,7 +24,7 @@ console.log(`Deployer: ${deployerAddress}`);
 console.log(`Balance: ${formatEther(deployerBalance)} POL`);
 
 const JarFund = await ethers.getContractFactory("JarFund");
-const jarFund = await JarFund.deploy(100);
+const jarFund = await JarFund.deploy();
 
 await jarFund.waitForDeployment();
 

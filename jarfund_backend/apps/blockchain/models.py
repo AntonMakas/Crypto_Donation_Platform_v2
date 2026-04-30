@@ -183,7 +183,6 @@ class EventType(models.TextChoices):
     DONATION_RECEIVED  = "DonationReceived",  "Donation Received"
     FUNDS_WITHDRAWN    = "FundsWithdrawn",    "Funds Withdrawn"
     JAR_STATUS_CHANGED = "JarStatusChanged",  "Jar Status Changed"
-    PLATFORM_FEE_UPDATED = "PlatformFeeUpdated", "Platform Fee Updated"
 
 
 class ContractEvent(models.Model):

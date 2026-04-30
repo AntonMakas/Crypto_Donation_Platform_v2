@@ -72,7 +72,6 @@ export const MAX_DEADLINE_DAYS   = 365
 export const MAX_TITLE_LENGTH    = 120
 export const MAX_DESCRIPTION_LENGTH = 1000
 export const MAX_MESSAGE_LENGTH  = 280
-export const PLATFORM_FEE_BPS    = 100    // 1%
 
 // ── Jar categories ────────────────────────────────────────────────
 

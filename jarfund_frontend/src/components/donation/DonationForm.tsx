@@ -305,10 +305,6 @@ export default function DonationForm({ jar }: DonationFormProps) {
           </>
         )}
       </button>
-
-      <p className="text-xs text-text-muted text-center">
-        1% platform fee · Funds go directly to smart contract
-      </p>
     </form>
   )
 }
