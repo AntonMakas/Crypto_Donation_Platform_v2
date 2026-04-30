@@ -61,6 +61,12 @@ class ReceiptProcessor:
         """
         from apps.donations.models import TxStatus
 
+        logger.info(
+            "process_donation_receipt: starting for donation #%s (tx=%s)",
+            donation.id,
+            donation.tx_hash[:14],
+        )
+
         # Already confirmed? Nothing to do.
         if donation.tx_status == TxStatus.CONFIRMED:
             return {"status": "already_confirmed", "donation_id": donation.id}
@@ -123,9 +129,10 @@ class ReceiptProcessor:
         decoded_events = self.service.decode_events(receipt)
         self._store_events(decoded_events, tx_log)
 
-        # ── 8. Sync jar status ───────────────────────────────────
-        donation.jar.sync_status()
-
+        # ── 8. Refresh jar totals and sync status ────────────────
+        jar = donation.jar
+        jar.refresh_cached_totals()
+        jar.sync_status()
 
         logger.info(
             "✅ Donation #%s confirmed: %s MATIC, block #%s, %d confs",
