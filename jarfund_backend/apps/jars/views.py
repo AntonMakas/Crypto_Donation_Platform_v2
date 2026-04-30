@@ -286,15 +286,14 @@ class JarViewSet(
     def donations(self, request, pk=None):
         jar = self.get_object()
 
-        qs = Donation.objects.filter(jar=jar)
+        qs = Donation.objects.filter(jar=jar).order_by("-created_at")
 
-        # Optional filter by status if provided
+        # filter by status
         tx_status = request.query_params.get("tx_status")
         if tx_status:
             qs = qs.filter(tx_status=tx_status)
 
-        # Show confirmed donations first, then pending, newest first within each group
-        qs = qs.order_by("-tx_status", "-created_at")
+
 
         page = self.paginate_queryset(qs)
         if page is not None:
