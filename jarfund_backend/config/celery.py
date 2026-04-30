@@ -29,6 +29,17 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 # Autodiscover tasks in all INSTALLED_APPS
 app.autodiscover_tasks()
 
+# Explicitly declare the default queue so the worker always has a
+# concrete queue to bind to, regardless of broker transport defaults.
+from kombu import Queue, Exchange  # noqa: E402
+
+app.conf.task_default_queue = "celery"
+app.conf.task_default_exchange = "celery"
+app.conf.task_default_routing_key = "celery"
+app.conf.task_queues = (
+    Queue("celery", Exchange("celery"), routing_key="celery"),
+)
+
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
