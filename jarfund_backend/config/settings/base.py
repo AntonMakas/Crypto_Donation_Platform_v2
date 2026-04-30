@@ -245,23 +245,7 @@ CELERY_TASK_TIME_LIMIT = 60 * 5          # 5 minutes max per task
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 4     # Soft limit: 4 minutes
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
-# Explicit queue routing — ensures tasks are sent to and consumed from
-# the same "celery" queue that the worker listens on by default.
-CELERY_DEFAULT_QUEUE = "celery"
-CELERY_DEFAULT_EXCHANGE = "celery"
-CELERY_DEFAULT_ROUTING_KEY = "celery"
 
-from kombu import Queue, Exchange  # noqa: E402
-CELERY_QUEUES = (
-    Queue("celery", Exchange("celery"), routing_key="celery"),
-)
-
-# Prevent the worker from pre-fetching tasks it cannot yet process,
-# which can cause tasks to appear "stuck" in the queue.
-CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-
-# Recycle workers periodically to guard against memory leaks.
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
 
 # Periodic task: verify pending donations every 30 seconds
 CELERY_BEAT_SCHEDULE = {
