@@ -207,7 +207,6 @@ export default function AppLayout() {
               <span>— Secure crypto donations on Polygon</span>
             </div>
             <div className="flex items-center gap-4">
-              <span>Bachelor Thesis · KTU · 2026</span>
               <a
                 href="https://amoy.polygonscan.com"
                 target="_blank"

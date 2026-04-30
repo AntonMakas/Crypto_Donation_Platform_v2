@@ -34,7 +34,7 @@ const schema = z.object({
   description: z.string().min(20, 'At least 20 characters').max(MAX_DESCRIPTION_LENGTH),
   category:    z.string().min(1, 'Pick a category'),
   cover_emoji: z.string().optional(),
-  target_amount_matic: z.string().refine(v => parseFloat(v) >= 0.01, 'Minimum target is 0.01 MATIC'),
+  target_amount_matic: z.string().refine(v => parseFloat(v) >= 0.01, 'Minimum target is 0.01 POL'),
   deadline:    z.string().refine(v => new Date(v) > new Date(Date.now() + 3_600_000), 'Must be at least 1 hour from now'),
 })
 type FormValues = z.infer<typeof schema>
@@ -298,7 +298,7 @@ export default function CreateJarPage() {
                   <label className="label">Target amount</label>
                   <div className="relative">
                     <input {...register('target_amount_matic')} type="number" step="0.01" min="0.01" placeholder="10" className={`input pr-16 ${errors.target_amount_matic ? 'error' : ''}`} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted font-mono">MATIC</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted font-mono">POL</span>
                   </div>
                   {errors.target_amount_matic && <p className="text-xs text-danger mt-1">{errors.target_amount_matic.message}</p>}
                 </div>
@@ -334,7 +334,7 @@ export default function CreateJarPage() {
               <div className="glass-panel p-4 text-left space-y-2 text-sm">
                 {[
                   { k: 'Title',    v: watch('title') },
-                  { k: 'Target',   v: `${watch('target_amount_matic')} MATIC` },
+                  { k: 'Target',   v: `${watch('target_amount_matic')} POL` },
                   { k: 'Deadline', v: watch('deadline') ? new Date(watch('deadline')).toLocaleDateString() : '—' },
                   { k: 'Network',  v: CHAIN_NAME === 'polygon' ? 'Polygon Mainnet' : 'Polygon Amoy (testnet)' },
                 ].map(({ k, v }) => (

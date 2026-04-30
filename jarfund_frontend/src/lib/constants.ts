@@ -25,8 +25,8 @@ export const POLYGON_AMOY_CHAIN = {
   id:        80002,
   name:      'Polygon Amoy',
   nativeCurrency: {
-    name:     'MATIC',
-    symbol:   'MATIC',
+    name:     'POL',
+    symbol:   'POL',
     decimals: 18,
   },
   rpcUrls: {
@@ -46,8 +46,8 @@ export const POLYGON_MAINNET_CHAIN = {
   id:        137,
   name:      'Polygon',
   nativeCurrency: {
-    name:     'MATIC',
-    symbol:   'MATIC',
+    name:     'POL',
+    symbol:   'POL',
     decimals: 18,
   },
   rpcUrls: {

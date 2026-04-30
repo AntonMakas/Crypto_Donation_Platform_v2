@@ -44,7 +44,7 @@ export function formatMatic(
     })
   }
 
-  return suffix ? `${formatted} MATIC` : formatted
+  return suffix ? `${formatted} POL` : formatted
 }
 
 /**

@@ -19,7 +19,7 @@ import type { Jar }          from '@/types'
 
 const schema = z.object({
   amount:      z.string().refine(v => parseFloat(v) >= MIN_DONATION_MATIC, {
-    message: `Minimum donation is ${MIN_DONATION_MATIC} MATIC`,
+    message: `Minimum donation is ${MIN_DONATION_MATIC} POL`,
   }),
   message:     z.string().max(280).optional(),
   is_anonymous: z.boolean().optional(),
@@ -76,7 +76,7 @@ export default function DonationForm({ jar }: DonationFormProps) {
       // 1. Send on-chain transaction
       const amountFloat = parseFloat(values.amount)
       if (isNaN(amountFloat) || amountFloat < MIN_DONATION_MATIC) {
-        toast.error(`Minimum donation is ${MIN_DONATION_MATIC} MATIC`)
+        toast.error(`Minimum donation is ${MIN_DONATION_MATIC} POL`)
         return
       }
       if (!jar.chain_jar_id) {
@@ -137,7 +137,7 @@ export default function DonationForm({ jar }: DonationFormProps) {
       <div className="glass-panel p-6 text-center space-y-4">
         <Wallet size={32} className="mx-auto text-primary-300" />
         <p className="font-display font-semibold text-text-primary">Connect to donate</p>
-        <p className="text-sm text-text-muted">You need a MetaMask wallet to send MATIC.</p>
+        <p className="text-sm text-text-muted">You need a MetaMask wallet to send POL.</p>
         <button onClick={() => connect({ connector: injected() })} className="btn-primary w-full">
           Connect Wallet
         </button>
@@ -228,7 +228,7 @@ export default function DonationForm({ jar }: DonationFormProps) {
 
       {/* Amount */}
       <div>
-        <label className="label">Amount (MATIC)</label>
+        <label className="label">Amount (POL)</label>
         <div className="relative">
           <input
             {...register('amount')}
@@ -238,7 +238,7 @@ export default function DonationForm({ jar }: DonationFormProps) {
             placeholder="0.5"
             className={`input pr-16 ${errors.amount ? 'error' : ''}`}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted">MATIC</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted">POL</span>
         </div>
         {errors.amount && (
           <p className="text-xs text-danger mt-1">{errors.amount.message}</p>

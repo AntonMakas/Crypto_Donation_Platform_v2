@@ -19,7 +19,7 @@ const fadeUp = {
 const HOW_IT_WORKS = [
   { step: '01', icon: '🔗', title: 'Connect wallet',  desc: 'Sign in with MetaMask using a cryptographic signature — no passwords, ever.' },
   { step: '02', icon: '🫙', title: 'Create your jar', desc: 'Set a goal, deadline, and description. Your campaign deploys to Polygon instantly.' },
-  { step: '03', icon: '💸', title: 'Receive donations', desc: 'Anyone sends MATIC directly to your smart contract. Every transfer is verifiable.' },
+  { step: '03', icon: '💸', title: 'Receive donations', desc: 'Anyone sends POL directly to your smart contract. Every transfer is verifiable.' },
   { step: '04', icon: '🏆', title: 'Withdraw funds',  desc: 'Once your goal is met or deadline passes, withdraw to your wallet in one transaction.' },
 ]
 
@@ -47,7 +47,7 @@ export default function HomePage() {
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/25 bg-primary-dim text-primary-300 text-xs font-semibold">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Built on Polygon Amoy · Bachelor Thesis KTU 2026
+            Built on Polygon Amoy
           </motion.div>
 
           <motion.h1 custom={0} variants={fadeUp} initial="hidden" animate="visible"
@@ -60,7 +60,7 @@ export default function HomePage() {
 
           <motion.p custom={1} variants={fadeUp} initial="hidden" animate="visible"
             className="text-lg text-text-secondary max-w-xl mx-auto leading-relaxed">
-            Create a jar, share the link, receive MATIC directly into a smart contract.
+            Create a jar, share the link, receive POL directly into a smart contract.
             Every donation is public, verifiable, and immutable.
           </motion.p>
 
@@ -79,7 +79,7 @@ export default function HomePage() {
               className="flex items-center justify-center gap-10 pt-4 flex-wrap">
               {[
                 { value: stats.total_jars,                         suffix: ' jars',   label: 'created'   },
-                { value: parseFloat(stats.total_raised_matic),     suffix: ' MATIC',  label: 'raised'    },
+                { value: parseFloat(stats.total_raised_matic),     suffix: ' POL',    label: 'raised'    },
                 { value: stats.total_donors,                       suffix: ' donors', label: 'worldwide' },
               ].map(({ value, suffix, label }, i) => (
                 <div key={i} className="text-center">

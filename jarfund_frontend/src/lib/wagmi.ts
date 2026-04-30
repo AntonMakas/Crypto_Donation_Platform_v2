@@ -17,7 +17,7 @@ const POLYGON_MAINNET_RPC = RPC_URL || 'https://polygon-bor-rpc.publicnode.com'
 export const polygonAmoy = defineChain({
   id:   80002,
   name: 'Polygon Amoy',
-  nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+  nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
   rpcUrls: {
     default: { http: [AMOY_RPC] },
   },
@@ -30,7 +30,7 @@ export const polygonAmoy = defineChain({
 export const polygonMainnet = defineChain({
   id:   137,
   name: 'Polygon',
-  nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+  nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
   rpcUrls: {
     default: { http: [POLYGON_MAINNET_RPC] },
   },
