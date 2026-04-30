@@ -186,11 +186,7 @@ def verify_single_transaction(self, tx_hash: str):
             tx_hash[:14], result.get("status"),
         )
 
-        # Dispatch an explicit jar sync to ensure amount_raised_matic is
-        # up-to-date even if the inline sync in process_donation_receipt
-        # encountered a transient RPC error.
-        if result.get("status") == "confirmed" and donation.jar.chain_jar_id:
-            sync_jar_from_chain.apply_async(args=[donation.jar.id], countdown=2)
+
 
         return result
 
