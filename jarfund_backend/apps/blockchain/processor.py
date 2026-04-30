@@ -126,21 +126,6 @@ class ReceiptProcessor:
         # ── 8. Sync jar status ───────────────────────────────────
         donation.jar.sync_status()
 
-        # ── 9. Sync jar amount from chain ────────────────────────
-        if donation.jar.chain_jar_id:
-            try:
-                on_chain_jar = self.service.get_on_chain_jar(donation.jar.chain_jar_id)
-                if on_chain_jar:
-                    donation.jar.amount_raised_matic = Decimal(str(on_chain_jar["amount_raised"]))
-                    donation.jar.donor_count = on_chain_jar["donor_count"]
-                    donation.jar.save(update_fields=["amount_raised_matic", "donor_count", "updated_at"])
-                    logger.info(
-                        "Jar #%s synced from chain: amount_raised=%s MATIC",
-                        donation.jar.id,
-                        donation.jar.amount_raised_matic,
-                    )
-            except Exception as exc:
-                logger.warning("Failed to sync jar #%s from chain: %s", donation.jar.id, exc)
 
         logger.info(
             "✅ Donation #%s confirmed: %s MATIC, block #%s, %d confs",
