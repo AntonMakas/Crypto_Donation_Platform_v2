@@ -67,7 +67,7 @@ def service(mock_settings, mock_w3):
     from apps.blockchain.service import BlockchainService
 
     with patch("apps.blockchain.service.Web3") as MockWeb3, \
-         patch("apps.blockchain.service.geth_poa_middleware"):
+         patch("apps.blockchain.service.ExtraDataToPOAMiddleware"):
         instance = BlockchainService.__new__(BlockchainService)
         instance.__init__()
         instance._w3 = mock_w3
