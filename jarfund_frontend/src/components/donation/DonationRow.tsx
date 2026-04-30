@@ -1,5 +1,9 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useQueryClient } from '@tanstack/react-query'
 import { ExternalLink, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { useTxStatus } from '@/hooks/useQueries'
+import { QUERY_KEYS } from '@/lib/constants'
 import { WalletAddress } from '@/components/ui/PageSpinner'
 import { formatMatic, timeAgo, explorerTxUrl } from '@/utils/format'
 import type { Donation, TxStatus } from '@/types'
@@ -18,6 +22,23 @@ const STATUS_ICON: Record<TxStatus, JSX.Element> = {
 }
 
 export default function DonationRow({ donation, index = 0, showJar = false }: DonationRowProps) {
+  const qc = useQueryClient()
+  const { data: liveTx } = useTxStatus(donation.tx_status === 'pending' ? donation.tx_hash : null)
+
+  const resolvedStatus: TxStatus =
+    donation.tx_status === 'pending' && liveTx?.status
+      ? liveTx.status
+      : donation.tx_status
+
+  useEffect(() => {
+    if (donation.tx_status !== 'pending') return
+    if (!liveTx?.status || liveTx.status === 'pending') return
+
+    qc.invalidateQueries({ queryKey: QUERY_KEYS.JAR(donation.jar_id) })
+    qc.invalidateQueries({ queryKey: QUERY_KEYS.DONATIONS })
+    qc.invalidateQueries({ queryKey: QUERY_KEYS.MY_DONATIONS })
+  }, [donation.jar_id, donation.tx_status, liveTx?.status, qc])
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -12 }}
@@ -30,7 +51,7 @@ export default function DonationRow({ donation, index = 0, showJar = false }: Do
       <div className="flex items-center gap-3 min-w-0">
         {/* Status dot */}
         <div className="shrink-0">
-          {STATUS_ICON[donation.tx_status] ?? STATUS_ICON.pending}
+          {STATUS_ICON[resolvedStatus] ?? STATUS_ICON.pending}
         </div>
 
         <div className="min-w-0">

@@ -272,7 +272,8 @@ class BlockchainService:
         Returns 0 if the tx block is ahead of latest (shouldn't happen).
         """
         current = self.get_current_block()
-        return max(0, current - tx_block_number)
+        # Include the transaction's own block in the confirmation count.
+        return max(0, current - tx_block_number + 1)
 
     def get_block_timestamp(self, block_number: int) -> datetime | None:
         """

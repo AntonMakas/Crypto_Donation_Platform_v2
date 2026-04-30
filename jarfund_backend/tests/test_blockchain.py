@@ -163,11 +163,11 @@ class TestReceiptValidation:
 
     def test_insufficient_confirmations_raises(self, service, mock_w3):
         from apps.blockchain.exceptions import InsufficientConfirmationsError
-        # Only 1 block ahead — need 3
+        # Only 2 confirmations total — need 3
         mock_w3.eth.block_number = 12345001
         with pytest.raises(InsufficientConfirmationsError) as exc_info:
             service.validate_receipt(MOCK_RECEIPT, MOCK_TX_HASH)
-        assert exc_info.value.current == 1
+        assert exc_info.value.current == 2
         assert exc_info.value.required == 3
 
     def test_wrong_contract_raises(self, service, mock_w3):
@@ -187,7 +187,7 @@ class TestConfirmationHelpers:
 
     def test_get_confirmations_calculates_correctly(self, service, mock_w3):
         mock_w3.eth.block_number = 12345010
-        assert service.get_confirmations(12345000) == 10
+        assert service.get_confirmations(12345000) == 11
 
     def test_get_confirmations_never_negative(self, service, mock_w3):
         mock_w3.eth.block_number = 100
