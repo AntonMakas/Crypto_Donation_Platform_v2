@@ -25,7 +25,7 @@ from typing import Any
 
 from web3 import Web3
 from web3.exceptions import TransactionNotFound, BadFunctionCallOutput
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 
 from .exceptions import (
     ABINotFoundError,
@@ -95,7 +95,7 @@ class BlockchainService:
     def w3(self) -> Web3:
         """
         Lazy Web3 instance.  Establishes connection on first access.
-        Polygon Amoy uses PoA consensus, so geth_poa_middleware is required
+        Polygon Amoy uses PoA consensus, so ExtraDataToPOAMiddleware is required
         to handle the extra vanityData field in block headers.
         """
         if self._w3 is None:
@@ -110,7 +110,7 @@ class BlockchainService:
                 request_kwargs={"timeout": 30},
             ))
             # Required for Polygon PoA chains
-            w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
         except Exception as exc:
             raise RPCConnectionError(f"Failed to create Web3 provider: {exc}") from exc
 
