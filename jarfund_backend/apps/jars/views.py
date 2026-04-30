@@ -150,6 +150,10 @@ class JarViewSet(
     @extend_schema(tags=["jars"], summary="Get jar detail with donations")
     def retrieve(self, request, *args, **kwargs):
         jar = self.get_object()
+        # Heal stale cached totals so progress/donor stats stay correct
+        # even if an earlier async update or signal was missed.
+        if jar.refresh_cached_totals():
+            jar.sync_status()
         return Response({
             "success": True,
             "data": JarDetailSerializer(jar, context={"request": request}).data,
@@ -310,6 +314,8 @@ class JarViewSet(
     @action(detail=True, methods=["get"], url_path="stats")
     def stats(self, request, pk=None):
         jar = self.get_object()
+        if jar.refresh_cached_totals():
+            jar.sync_status()
 
         confirmed = Donation.objects.filter(jar=jar, tx_status=TxStatus.CONFIRMED)
         pending   = Donation.objects.filter(jar=jar, tx_status=TxStatus.PENDING)
@@ -353,6 +359,10 @@ class MyJarsView(APIView):
         jars = Jar.objects.filter(
             creator=request.user
         ).order_by("-created_at")
+
+        for jar in jars:
+            if jar.refresh_cached_totals():
+                jar.sync_status()
 
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(jars, request)

@@ -267,6 +267,41 @@ class Jar(models.Model):
             return True
         return False
 
+    def refresh_cached_totals(self, *, save: bool = True) -> bool:
+        """
+        Recalculate cached raised amount and donor count from confirmed donations.
+        Returns True if any cached value changed.
+        """
+        from django.db.models import Sum
+        from apps.donations.models import Donation, TxStatus
+
+        confirmed = Donation.objects.filter(
+            jar=self,
+            tx_status=TxStatus.CONFIRMED,
+            is_verified=True,
+        )
+
+        total = confirmed.aggregate(total=Sum("amount_matic"))["total"] or Decimal("0")
+        donors = confirmed.values("donor_wallet").distinct().count()
+
+        changed = False
+        update_fields: list[str] = []
+
+        if self.amount_raised_matic != total:
+            self.amount_raised_matic = total
+            update_fields.append("amount_raised_matic")
+            changed = True
+
+        if self.donor_count != donors:
+            self.donor_count = donors
+            update_fields.append("donor_count")
+            changed = True
+
+        if changed and save:
+            self.save(update_fields=[*update_fields, "updated_at"])
+
+        return changed
+
     def save(self, *args, **kwargs):
         # Always denormalize creator_wallet from the FK
         if self.creator_id and not self.creator_wallet:
