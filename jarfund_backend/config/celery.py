@@ -24,8 +24,12 @@ from kombu import Exchange, Queue
 
 logger = logging.getLogger(__name__)
 
-# Default to local settings in dev
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+# Match Django's production entrypoint on Railway unless explicitly overridden.
+if "DJANGO_SETTINGS_MODULE" not in os.environ:
+    if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_PROJECT_ID"):
+        os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.production"
+    else:
+        os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.local"
 
 app = Celery("jarfund")
 
@@ -57,6 +61,10 @@ def log_registered_tasks(sender, **kwargs):
     task_names = sorted(
         name for name in sender.tasks.keys()
         if not name.startswith("celery.")
+    )
+    logger.info(
+        "Celery using settings module: %s",
+        os.environ.get("DJANGO_SETTINGS_MODULE"),
     )
     logger.info("Celery finalized with %d registered app task(s)", len(task_names))
     logger.info("Celery registered tasks: %s", ", ".join(task_names))
