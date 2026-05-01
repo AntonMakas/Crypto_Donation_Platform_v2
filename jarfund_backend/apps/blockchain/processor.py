@@ -10,6 +10,7 @@ Usage (in Celery tasks):
     result    = processor.process_donation_receipt(donation, receipt)
 """
 import logging
+from collections.abc import Mapping
 from decimal import Decimal
 from datetime import datetime, timezone
 from typing import Any
@@ -264,7 +265,6 @@ class ReceiptProcessor:
         Uses update_or_create so it's safe to call multiple times.
         """
         from apps.blockchain.models import TransactionLog, TxLogStatus
-        from django.conf import settings
 
         block_number = receipt.get("blockNumber")
         block_hash   = receipt.get("blockHash")
@@ -275,7 +275,7 @@ class ReceiptProcessor:
         confs = self.service.get_confirmations(block_number) if block_number else 0
 
         # Safely sanitise raw receipt for JSON storage
-        safe_receipt = _make_json_safe(dict(receipt))
+        safe_receipt = _make_json_safe(receipt)
 
         tx_log, created = TransactionLog.objects.update_or_create(
             tx_hash=tx_hash,
@@ -339,7 +339,7 @@ def _make_json_safe(data: Any) -> Any:
     Recursively convert web3.py types (HexBytes, AttributeDict, etc.)
     to JSON-serialisable Python primitives.
     """
-    if isinstance(data, dict):
+    if isinstance(data, Mapping):
         return {k: _make_json_safe(v) for k, v in data.items()}
     if isinstance(data, (list, tuple)):
         return [_make_json_safe(i) for i in data]

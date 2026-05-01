@@ -370,7 +370,7 @@ class BlockchainService:
         for event_name in event_names:
             try:
                 event_obj = getattr(self.contract.events, event_name)()
-                logs = event_obj.process_receipt(receipt, errors="discard")
+                logs = event_obj.process_receipt(receipt, errors="DISCARD")
                 for log in logs:
                     decoded.append({
                         "event":      event_name,
