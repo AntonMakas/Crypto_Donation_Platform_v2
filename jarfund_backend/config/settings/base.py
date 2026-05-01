@@ -245,6 +245,12 @@ CELERY_TASK_TIME_LIMIT = 60 * 5          # 5 minutes max per task
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 4     # Soft limit: 4 minutes
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
+# Broker connection retry — required in Celery 5.4+ to suppress deprecation
+# warning and ensure the worker retries on startup if Redis is briefly unavailable.
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
 # Explicit queue configuration — ensures the worker binds to and consumes
 # from the correct Redis queue rather than silently dropping tasks.
 from kombu import Exchange, Queue
@@ -257,6 +263,14 @@ CELERY_QUEUES = (
 )
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1    # Fetch one task at a time; avoids starvation
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000 # Recycle workers to prevent memory leaks
+
+# Task acknowledgment — mark tasks complete only after execution, not on receipt.
+# Prevents task loss if the worker crashes mid-execution.
+CELERY_TASK_ACKS_LATE = True
+
+# Worker pool — explicitly use prefork to avoid hanging on startup in
+# environments where the default pool detection may stall.
+CELERY_WORKER_POOL = "prefork"
 
 
 
