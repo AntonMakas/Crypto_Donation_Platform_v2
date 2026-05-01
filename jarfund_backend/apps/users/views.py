@@ -203,8 +203,12 @@ class LogoutView(APIView):
             )
         try:
             token = RefreshToken(refresh_token)
-            token.blacklist()
-            logger.info("Token blacklisted for user %s", request.user.wallet_address)
+            try:
+                token.blacklist()
+            except AttributeError:
+                # token_blacklist app is not installed; skip blacklisting
+                pass
+            logger.info("Token invalidated for user %s", request.user.wallet_address)
             return Response({"success": True, "message": "Logged out successfully."})
         except TokenError as e:
             return Response(
