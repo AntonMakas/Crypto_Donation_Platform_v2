@@ -39,6 +39,11 @@ app.conf.task_queues = (
     Queue("celery", Exchange("celery"), routing_key="celery"),
 )
 
+# Explicit task routing — ensures all tasks go to the correct queue
+app.conf.task_routes = {
+    'apps.blockchain.tasks.*': {'queue': 'celery'},
+    'apps.jars.tasks.*': {'queue': 'celery'},
+}
 
 
 @app.task(bind=True, ignore_result=True)
