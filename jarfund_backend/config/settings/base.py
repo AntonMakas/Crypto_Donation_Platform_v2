@@ -245,6 +245,19 @@ CELERY_TASK_TIME_LIMIT = 60 * 5          # 5 minutes max per task
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 4     # Soft limit: 4 minutes
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
+# Explicit queue configuration — ensures the worker binds to and consumes
+# from the correct Redis queue rather than silently dropping tasks.
+from kombu import Exchange, Queue
+
+CELERY_DEFAULT_QUEUE = "celery"
+CELERY_DEFAULT_EXCHANGE = "celery"
+CELERY_DEFAULT_ROUTING_KEY = "celery"
+CELERY_QUEUES = (
+    Queue("celery", Exchange("celery"), routing_key="celery"),
+)
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1    # Fetch one task at a time; avoids starvation
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000 # Recycle workers to prevent memory leaks
+
 
 
 # Periodic task: verify pending donations every 30 seconds
