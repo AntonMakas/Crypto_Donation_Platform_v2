@@ -256,6 +256,10 @@ CELERY_DEFAULT_ROUTING_KEY = "celery"
 CELERY_QUEUES = (
     Queue("celery", Exchange("celery"), routing_key="celery"),
 )
+CELERY_TASK_ROUTES = {
+    'apps.blockchain.tasks.*': {'queue': 'celery'},
+    'apps.jars.tasks.*': {'queue': 'celery'},
+}
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1    # Fetch one task at a time; avoids starvation
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000 # Recycle workers to prevent memory leaks
 

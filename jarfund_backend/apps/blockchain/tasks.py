@@ -86,6 +86,7 @@ def verify_pending_donations(self):
         for tx_hash in tx_hashes:
             verify_single_transaction.apply_async(
                 args=[tx_hash],
+                queue='celery',
                 countdown=0,
             )
 
@@ -398,6 +399,7 @@ def sync_all_jars_from_chain():
     for jar_id in jars:
         sync_jar_from_chain.apply_async(
             args=[jar_id],
+            queue='celery',
             countdown=dispatched * 2,  # stagger by 2s each
         )
         dispatched += 1
