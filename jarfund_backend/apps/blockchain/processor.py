@@ -112,10 +112,6 @@ class ReceiptProcessor:
             confirmations=confs,
         )
 
-        # Ensure is_verified is set so refresh_cached_totals() counts this donation
-        donation.is_verified = True
-        donation.save(update_fields=["is_verified"])
-
         # ── 6. Create / update TransactionLog ────────────────────
         tx_log = self._upsert_transaction_log(
             tx_hash=donation.tx_hash,
@@ -134,8 +130,12 @@ class ReceiptProcessor:
         self._store_events(decoded_events, tx_log)
 
         # ── 8. Refresh jar cached totals and sync status ─────────
-        donation.jar.refresh_cached_totals()
-        donation.jar.sync_status()
+        # Reload jar from DB to ensure fresh state after donation save.
+        # select_for_update() prevents race conditions with concurrent donations.
+        from apps.jars.models import Jar
+        jar = Jar.objects.select_for_update().get(pk=donation.jar_id)
+        jar.refresh_cached_totals(save=True)
+        jar.sync_status()
 
 
         logger.info(
