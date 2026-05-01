@@ -84,10 +84,15 @@ def verify_pending_donations(self):
         )
 
         for tx_hash in tx_hashes:
-            verify_single_transaction.apply_async(
+            async_result = verify_single_transaction.apply_async(
                 args=[tx_hash],
                 queue='celery',
                 countdown=0,
+            )
+            logger.info(
+                "verify_pending_donations: queued tx=%s task_id=%s queue=celery",
+                tx_hash[:14],
+                async_result.id,
             )
 
         return {"dispatched": count, "tx_hashes": tx_hashes}
