@@ -12,6 +12,7 @@ Usage (in Celery tasks):
 import logging
 from decimal import Decimal
 from datetime import datetime, timezone
+from typing import Any
 
 from django.db import transaction
 from django.utils import timezone as dj_timezone
@@ -350,6 +351,3 @@ def _make_json_safe(data: Any) -> Any:
         return str(data)
     return data
 
-
-# Type alias for the Any import
-from typing import Any
