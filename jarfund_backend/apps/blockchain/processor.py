@@ -112,6 +112,10 @@ class ReceiptProcessor:
             confirmations=confs,
         )
 
+        # Ensure is_verified is set so refresh_cached_totals() counts this donation
+        donation.is_verified = True
+        donation.save(update_fields=["is_verified"])
+
         # ── 6. Create / update TransactionLog ────────────────────
         tx_log = self._upsert_transaction_log(
             tx_hash=donation.tx_hash,
