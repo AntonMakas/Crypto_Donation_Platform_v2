@@ -19,7 +19,7 @@ import os
 import logging
 
 from celery import Celery
-from celery.signals import worker_ready
+from celery.signals import after_task_publish, task_failure, task_postrun, task_prerun, worker_ready
 from kombu import Exchange, Queue
 
 logger = logging.getLogger(__name__)
@@ -80,6 +80,67 @@ def log_worker_runtime_state(sender=None, **kwargs):
         app_instance.conf.task_default_queue,
         queue_names,
         app_instance.conf.task_routes,
+    )
+
+
+@after_task_publish.connect
+def log_task_published(sender=None, headers=None, body=None, exchange=None, routing_key=None, **kwargs):
+    """Log task publication details for app tasks."""
+    task_name = sender or ""
+    if not str(task_name).startswith("apps."):
+        return
+    task_id = (headers or {}).get("id")
+    logger.info(
+        "Celery published task=%s task_id=%s exchange=%s routing_key=%s",
+        task_name,
+        task_id,
+        exchange,
+        routing_key,
+    )
+
+
+@task_prerun.connect
+def log_task_prerun(task_id=None, task=None, args=None, kwargs=None, **extras):
+    """Log just before a task starts executing in a worker process."""
+    task_name = getattr(task, "name", "")
+    if not str(task_name).startswith("apps."):
+        return
+    logger.info(
+        "Celery task starting task=%s task_id=%s args=%s kwargs=%s",
+        task_name,
+        task_id,
+        args,
+        kwargs,
+    )
+
+
+@task_postrun.connect
+def log_task_postrun(task_id=None, task=None, state=None, retval=None, **extras):
+    """Log when a task exits, regardless of success or retry."""
+    task_name = getattr(task, "name", "")
+    if not str(task_name).startswith("apps."):
+        return
+    logger.info(
+        "Celery task finished task=%s task_id=%s state=%s",
+        task_name,
+        task_id,
+        state,
+    )
+
+
+@task_failure.connect
+def log_task_failure(task_id=None, exception=None, sender=None, args=None, kwargs=None, traceback=None, einfo=None, **extras):
+    """Log Celery-level task failures with task identity."""
+    task_name = getattr(sender, "name", "")
+    if not str(task_name).startswith("apps."):
+        return
+    logger.error(
+        "Celery task failed task=%s task_id=%s error=%s args=%s kwargs=%s",
+        task_name,
+        task_id,
+        exception,
+        args,
+        kwargs,
     )
 
 
