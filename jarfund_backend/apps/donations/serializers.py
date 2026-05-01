@@ -124,6 +124,7 @@ class DonationCreateSerializer(serializers.ModelSerializer):
         from apps.blockchain.tasks import verify_single_transaction
         verify_single_transaction.apply_async(
             args=[donation.tx_hash],
+            queue='celery',
             countdown=5,   # 5-second delay — let the tx propagate
         )
 
