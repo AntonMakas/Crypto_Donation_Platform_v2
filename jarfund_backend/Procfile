@@ -6,6 +6,6 @@
 
 web:    gunicorn config.wsgi:application --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT --log-level info
 
-worker: celery -A config.celery worker --loglevel=info --concurrency=2 --pool=prefork --without-gossip --without-mingle --without-heartbeat
+worker: celery -A config.celery worker --loglevel=info --concurrency=2
 
 beat:   celery -A config.celery beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
