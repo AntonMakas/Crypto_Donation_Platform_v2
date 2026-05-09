@@ -16,13 +16,13 @@ Endpoints:
 import logging
 from decimal import Decimal
 
-from django.db.models import Sum, Count, Max, Avg, Q
+from django.db.models import Sum, Count, Max, Avg
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
@@ -33,6 +33,7 @@ from rest_framework.mixins import (
     CreateModelMixin,
 )
 
+from apps.jars.filters import JarFilter
 from apps.jars.models import Jar, JarStatus
 from apps.jars.serializers import (
     JarListSerializer,
@@ -45,7 +46,6 @@ from apps.jars.serializers import (
 from apps.donations.models import Donation, TxStatus
 from apps.donations.serializers import DonationListSerializer, DonationStatsSerializer
 from core.pagination import StandardResultsPagination
-from core.permissions import IsJarCreator, IsOwnerOrReadOnly
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class JarViewSet(
     search_fields       = ["title", "description", "creator_wallet"]
 
     # Filter: ?status=active&category=education
-    filterset_fields    = ["status", "category", "is_verified_on_chain"]
+    filterset_class     = JarFilter
 
     # Order: ?ordering=-amount_raised_matic
     ordering_fields     = ["created_at", "deadline", "amount_raised_matic", "donor_count"]

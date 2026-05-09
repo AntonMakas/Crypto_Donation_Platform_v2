@@ -37,7 +37,7 @@ export default function ExplorePage() {
   const queryParams = {
     ...(debouncedSearch        ? { search: debouncedSearch }          : {}),
     ...(category !== 'all'     ? { category }                          : {}),
-    ...(status   !== 'all'     ? { status }                            : { include_all: '1' }),
+    ...(status   !== 'all'     ? { status, include_all: '1' }          : { include_all: '1' }),
     ordering,
     page_size: DEFAULT_PAGE_SIZE,
   }

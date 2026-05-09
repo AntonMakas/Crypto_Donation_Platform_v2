@@ -54,8 +54,8 @@ export default function HomePage() {
             className="font-display font-extrabold leading-[1.05] tracking-tight"
             style={{ fontSize: 'clamp(3rem, 8vw, 6rem)' }}>
             Fundraise{' '}
-            <span className="text-gradient">transparently</span>
-            <br />on the blockchain
+            <span className="text-gradient">on the blockchain</span>
+            <br />with Polygon
           </motion.h1>
 
           <motion.p custom={1} variants={fadeUp} initial="hidden" animate="visible"

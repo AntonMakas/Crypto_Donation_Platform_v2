@@ -46,9 +46,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # ─────────────────────────────────────────────────────────────────
 #  EMAIL — print to console in dev
 # ─────────────────────────────────────────────────────────────────
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-
 # ─────────────────────────────────────────────────────────────────
 #  CACHING — use local memory in dev (no Redis required)
 # ─────────────────────────────────────────────────────────────────

@@ -209,6 +209,11 @@ body {
     padding-right: 36px;
   }
 
+  .select option {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
   /* ── Label ───────────────────────────────────────────────────  */
   .label {
     @apply block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2;
