@@ -38,7 +38,7 @@ export default defineConfig({
   },
 
   preview: {
-    allowedHosts: ['.up.railway.app'],
+    allowedHosts: ['.up.railway.app', 'jarfund.xyz'],
   },
 
   build: {
