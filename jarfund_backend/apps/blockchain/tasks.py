@@ -1,23 +1,3 @@
-"""
-Celery tasks for blockchain verification.
-
-Task hierarchy:
-  verify_pending_donations     ← Beat: runs every 30 s
-      └─ verify_single_transaction  ← spawned per pending donation
-              └─ BlockchainService + ReceiptProcessor
-
-  verify_jar_creation          ← called by JarViewSet.confirm()
-
-  sync_jar_from_chain          ← on-demand: refresh jar state from contract
-  sync_all_jars_from_chain     ← admin/maintenance: bulk sync all jars
-
-Retry strategy:
-  ─ TransactionNotFound / InsufficientConfirmations → short retry (15 s)
-  ─ RPCConnectionError / RPCTimeoutError            → longer retry (60 s)
-  ─ TransactionReverted / WrongContract             → no retry (terminal)
-  ─ After MAX_ATTEMPTS the donation is NOT marked failed
-    (it stays pending for manual review via Django Admin)
-"""
 import logging
 from datetime import timedelta
 
@@ -38,14 +18,8 @@ from .exceptions import (
 
 logger = logging.getLogger(__name__)
 
-# Donations pending longer than this are considered stale
 MAX_VERIFICATION_ATTEMPTS = 20
 STALE_THRESHOLD_HOURS     = 4
-
-
-# ─────────────────────────────────────────────────────────────────
-#  PERIODIC: scan all pending donations
-# ─────────────────────────────────────────────────────────────────
 
 @shared_task(
     bind=True,
@@ -56,13 +30,6 @@ STALE_THRESHOLD_HOURS     = 4
     time_limit=300,
 )
 def verify_pending_donations(self):
-    """
-    Beat task — runs every 30 seconds.
-
-    Finds all PENDING donations and spawns individual verify tasks.
-    Skips donations that have exceeded MAX_VERIFICATION_ATTEMPTS
-    (those appear in Django Admin for manual review).
-    """
     from apps.donations.models import Donation, TxStatus
 
     try:
@@ -101,11 +68,6 @@ def verify_pending_donations(self):
         logger.error("verify_pending_donations error: %s", exc, exc_info=True)
         raise self.retry(exc=exc)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  CORE: verify one transaction
-# ─────────────────────────────────────────────────────────────────
-
 @shared_task(
     bind=True,
     name="apps.blockchain.tasks.verify_single_transaction",
@@ -114,41 +76,25 @@ def verify_pending_donations(self):
     time_limit=60,
 )
 def verify_single_transaction(self, tx_hash: str):
-    """
-    Fetch a transaction receipt and update the Donation record.
-
-    Retry schedule:
-      ─ Attempts 1–5:  every 15 s   (tx propagating)
-      ─ Attempts 6–10: every 30 s   (slow confirmation)
-      ─ Attempts 11+:  every 60 s   (long tail)
-
-    Terminal failures (no retry):
-      ─ TransactionReverted — tx failed on-chain → mark donation FAILED
-      ─ WrongContract       — tx not for JarFund → mark FAILED
-      ─ Configuration errors (ABI missing, contract not set)
-    """
     from apps.donations.models import Donation, TxStatus
     from .service import BlockchainService
     from .processor import ReceiptProcessor
 
     logger.info("verify_single_transaction: starting tx=%s (attempt %d)", tx_hash[:14], self.request.retries + 1)
 
-    # ── Fetch donation ───────────────────────────────────────────
+    # Fetch donation
     try:
         donation = Donation.objects.select_related("jar").get(tx_hash=tx_hash)
     except Donation.DoesNotExist:
         logger.warning("verify_single_transaction: tx_hash not in DB — %s", tx_hash[:14])
         return {"status": "not_found", "tx_hash": tx_hash}
 
-    # Already processed?
     if donation.tx_status != TxStatus.PENDING:
         logger.debug("Donation #%s already %s — skipping", donation.id, donation.tx_status)
         return {"status": "already_processed", "donation_id": donation.id}
 
-    # Bump attempt counter
     donation.increment_verification_attempt()
 
-    # ── Initialise service ───────────────────────────────────────
     try:
         svc       = BlockchainService()
         processor = ReceiptProcessor(svc)
@@ -159,8 +105,6 @@ def verify_single_transaction(self, tx_hash: str):
             tx_hash[:14], exc,
         )
         return {"status": "config_error", "error": str(exc)}
-
-    # ── Fetch receipt ────────────────────────────────────────────
     try:
         receipt = svc.get_receipt(tx_hash)
     except (RPCConnectionError, RPCTimeoutError) as exc:
@@ -172,7 +116,6 @@ def verify_single_transaction(self, tx_hash: str):
         )
         raise self.retry(exc=exc, countdown=delay)
 
-    # Tx not yet mined — retry
     if receipt is None:
         delay = _backoff_delay(self.request.retries)
         logger.info(
@@ -184,7 +127,6 @@ def verify_single_transaction(self, tx_hash: str):
             countdown=delay,
         )
 
-    # ── Process receipt ──────────────────────────────────────────
     try:
         result = processor.process_donation_receipt(donation, receipt)
         logger.info(
@@ -197,7 +139,7 @@ def verify_single_transaction(self, tx_hash: str):
         return result
 
     except InsufficientConfirmationsError as exc:
-        # Mined but not enough confirmations yet — retry soon
+
         delay = 20
         logger.info(
             "Tx %s: %d/%d confirmations — retrying in %ds",
@@ -229,10 +171,6 @@ def verify_single_transaction(self, tx_hash: str):
         delay = _backoff_delay(self.request.retries)
         raise self.retry(exc=exc, countdown=delay)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR CREATION VERIFICATION
-# ─────────────────────────────────────────────────────────────────
 
 @shared_task(
     bind=True,
@@ -296,11 +234,6 @@ def verify_jar_creation(self, jar_id: int):
             jar_id, exc, exc_info=True,
         )
         raise self.retry(exc=exc, countdown=_backoff_delay(self.request.retries))
-
-
-# ─────────────────────────────────────────────────────────────────
-#  ON-DEMAND: sync a single jar's state from contract
-# ─────────────────────────────────────────────────────────────────
 
 @shared_task(
     bind=True,
@@ -373,25 +306,12 @@ def sync_jar_from_chain(self, jar_id: int):
         logger.error("sync_jar_from_chain Jar #%s error: %s", jar_id, exc, exc_info=True)
         raise self.retry(exc=exc)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  MAINTENANCE: bulk sync all active jars
-# ─────────────────────────────────────────────────────────────────
-
 @shared_task(
     name="apps.blockchain.tasks.sync_all_jars_from_chain",
     soft_time_limit=600,
     time_limit=660,
 )
 def sync_all_jars_from_chain():
-    """
-    Admin / maintenance task: queue sync_jar_from_chain for every
-    jar that has a chain_jar_id. Run manually from Django Admin or CLI.
-
-    Usage:
-        from apps.blockchain.tasks import sync_all_jars_from_chain
-        sync_all_jars_from_chain.delay()
-    """
     from apps.jars.models import Jar, JarStatus
 
     jars = Jar.objects.exclude(
@@ -412,22 +332,11 @@ def sync_all_jars_from_chain():
     logger.info("sync_all_jars_from_chain: dispatched %d tasks", dispatched)
     return {"dispatched": dispatched}
 
-
-# ─────────────────────────────────────────────────────────────────
-#  STALE DONATION REPORT (monitoring)
-# ─────────────────────────────────────────────────────────────────
-
 @shared_task(
     name="apps.blockchain.tasks.report_stale_donations",
     soft_time_limit=60,
 )
 def report_stale_donations():
-    """
-    Daily task: find donations that have been pending for too long.
-    Logs them for monitoring. Does NOT automatically fail them.
-
-    Schedule this daily via Celery Beat if needed.
-    """
     from apps.donations.models import Donation, TxStatus
 
     threshold = timezone.now() - timedelta(hours=STALE_THRESHOLD_HOURS)
@@ -453,22 +362,7 @@ def report_stale_donations():
     return {"stale_count": count, "donations": stale_list}
 
 
-# ─────────────────────────────────────────────────────────────────
-#  HELPERS
-# ─────────────────────────────────────────────────────────────────
-
 def _backoff_delay(retry_count: int) -> int:
-    """
-    Exponential back-off with a cap.
-    retry_count 0 → 15 s
-    retry_count 1 → 15 s
-    retry_count 2 → 15 s
-    retry_count 3 → 15 s
-    retry_count 4 → 30 s
-    retry_count 5 → 30 s
-    retry_count 6–9 → 60 s
-    retry_count 10+ → 120 s
-    """
     if retry_count < 4:
         return 15
     if retry_count < 6:

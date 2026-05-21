@@ -1,6 +1,3 @@
-"""
-Django admin configuration for the jars app.
-"""
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count, Sum
@@ -9,7 +6,6 @@ from .models import Jar, JarStatus
 
 
 class DonationInline(admin.TabularInline):
-    """Show donations inline within the Jar admin detail page."""
     from apps.donations.models import Donation
     model = Donation
     extra = 0

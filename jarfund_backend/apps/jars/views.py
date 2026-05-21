@@ -53,11 +53,6 @@ logger = logging.getLogger(__name__)
 class CreateJarThrottle(UserRateThrottle):
     rate = "10/minute"
 
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR VIEWSET
-# ─────────────────────────────────────────────────────────────────
-
 class JarViewSet(
     ListModelMixin,
     RetrieveModelMixin,
@@ -83,17 +78,12 @@ class JarViewSet(
 
     def get_queryset(self):
         qs = Jar.objects.select_related("creator").prefetch_related(
-            # Prefetch only the 20 most recent confirmed donations for list
-            # (detail fetches all via DonationListView)
         )
 
-        # Filter by creator wallet if provided
         wallet = self.request.query_params.get("creator_wallet")
         if wallet:
             qs = qs.filter(creator_wallet__iexact=wallet)
 
-        # Filter active-only by default on the explore page
-        # (pass ?include_all=1 to see all statuses)
         if self.action == "list":
             include_all = self.request.query_params.get("include_all", "0")
             if include_all != "1" and "status" not in self.request.query_params:
@@ -150,8 +140,7 @@ class JarViewSet(
     @extend_schema(tags=["jars"], summary="Get jar detail with donations")
     def retrieve(self, request, *args, **kwargs):
         jar = self.get_object()
-        # Heal stale cached totals so progress/donor stats stay correct
-        # even if an earlier async update or signal was missed.
+
         if jar.refresh_cached_totals():
             jar.sync_status()
         return Response({
@@ -159,7 +148,6 @@ class JarViewSet(
             "data": JarDetailSerializer(jar, context={"request": request}).data,
         })
 
-    # ── PARTIAL UPDATE (PATCH) ────────────────────────────────────
     @extend_schema(tags=["jars"], summary="Update jar metadata (creator only)")
     def partial_update(self, request, *args, **kwargs):
         jar = self.get_object()
@@ -221,7 +209,6 @@ class JarViewSet(
         jar.creation_tx_hash = creation_tx_hash
         jar.save(update_fields=["chain_jar_id", "creation_tx_hash", "updated_at"])
 
-        # Queue on-chain verification
         from apps.blockchain.tasks import verify_jar_creation
         verify_jar_creation.apply_async(args=[jar.id], countdown=10)
 
@@ -341,11 +328,6 @@ class JarViewSet(
 
         serializer = DonationStatsSerializer(stats_data)
         return Response({"success": True, "data": serializer.data})
-
-
-# ─────────────────────────────────────────────────────────────────
-#  MY JARS (authenticated user's own jars)
-# ─────────────────────────────────────────────────────────────────
 
 class MyJarsView(APIView):
     """

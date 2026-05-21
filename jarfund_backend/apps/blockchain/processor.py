@@ -1,14 +1,3 @@
-"""
-ReceiptProcessor — bridges raw web3.py receipts to Django model updates.
-
-Separates the blockchain parsing logic from the Celery task orchestration.
-Each process_*() method is atomic: it reads a receipt and writes the
-minimal set of model changes needed, then returns a result dict for logging.
-
-Usage (in Celery tasks):
-    processor = ReceiptProcessor(service)
-    result    = processor.process_donation_receipt(donation, receipt)
-"""
 import logging
 from collections.abc import Mapping
 from decimal import Decimal
@@ -29,38 +18,12 @@ logger = logging.getLogger(__name__)
 
 
 class ReceiptProcessor:
-    """
-    Stateless processor. Pass a BlockchainService instance at construction.
-    All methods are safe to call multiple times (idempotent).
-    """
 
     def __init__(self, service):
         self.service = service
 
-    # ─────────────────────────────────────────────────────────────
-    #  DONATION RECEIPT
-    # ─────────────────────────────────────────────────────────────
-
     @transaction.atomic
     def process_donation_receipt(self, donation, receipt: dict) -> dict:
-        """
-        Parse a donate() transaction receipt and update the Donation record.
-
-        Steps:
-          1. Validate receipt (status, contract, confirmations)
-          2. Extract gas info and block timestamp
-          3. Decode DonationReceived event to cross-check amount
-          4. Mark donation as CONFIRMED
-          5. Create/update TransactionLog and ContractEvent records
-          6. Trigger jar sync (amount_raised_matic + status)
-
-        Returns a result dict describing what changed.
-
-        Raises:
-          TransactionRevertedError         — tx failed on-chain
-          InsufficientConfirmationsError   — need more blocks
-          WrongContractError               — tx to wrong address
-        """
         from apps.donations.models import TxStatus
 
         logger.info(
@@ -69,28 +32,27 @@ class ReceiptProcessor:
             donation.tx_hash[:14],
         )
 
-        # Already confirmed? Nothing to do.
         if donation.tx_status == TxStatus.CONFIRMED:
             return {"status": "already_confirmed", "donation_id": donation.id}
 
-        # ── 1. Validate ──────────────────────────────────────────
+        # Validate
         self.service.validate_receipt(receipt, donation.tx_hash)
 
         block_number = receipt["blockNumber"]
         gas_used     = receipt.get("gasUsed", 0)
         confs        = self.service.get_confirmations(block_number)
 
-        # ── 2. Block timestamp ───────────────────────────────────
+        # Block timestamp
         block_ts = self.service.get_block_timestamp(block_number)
 
-        # ── 3. Gas price ─────────────────────────────────────────
+        # Gas price
         try:
             tx_data = self.service.get_transaction(donation.tx_hash)
         except Exception:
             tx_data = None
         gas_price_gwei = self.service.get_gas_price_gwei(receipt, tx_data)
 
-        # ── 4. Cross-check amount via event ──────────────────────
+        # Cross-check amount via event
         event_args = self.service.decode_donation_event(receipt)
         if event_args:
             on_chain_amount = self.service.wei_to_matic(event_args.get("amount", 0))
@@ -105,7 +67,7 @@ class ReceiptProcessor:
                 donation.amount_matic = on_chain_amount
                 donation.amount_wei   = str(event_args.get("amount", 0))
 
-        # ── 5. Mark confirmed ────────────────────────────────────
+        # Mark confirmed
         donation.mark_confirmed(
             block_number=block_number,
             block_timestamp=block_ts,
@@ -114,11 +76,10 @@ class ReceiptProcessor:
             confirmations=confs,
         )
 
-        # Ensure is_verified is set so refresh_cached_totals() counts this donation
         donation.is_verified = True
         donation.save(update_fields=["is_verified"])
 
-        # ── 6. Create / update TransactionLog ────────────────────
+        # Create
         tx_log = self._upsert_transaction_log(
             tx_hash=donation.tx_hash,
             tx_type="donate",
@@ -131,11 +92,9 @@ class ReceiptProcessor:
             donation_id_ref=donation.id,
         )
 
-        # ── 7. Create ContractEvent records ──────────────────────
         decoded_events = self.service.decode_events(receipt)
         self._store_events(decoded_events, tx_log)
 
-        # ── 8. Refresh jar cached totals and sync status ─────────
         donation.jar.refresh_cached_totals()
         donation.jar.sync_status()
 
@@ -155,10 +114,6 @@ class ReceiptProcessor:
 
     @transaction.atomic
     def process_donation_failure(self, donation, reason: str) -> dict:
-        """
-        Mark a donation as failed and create a TransactionLog entry.
-        Called when a receipt has status=0 or another terminal error.
-        """
         from apps.donations.models import TxStatus
 
         if donation.tx_status != TxStatus.PENDING:
@@ -176,10 +131,6 @@ class ReceiptProcessor:
             "reason":      reason,
         }
 
-    # ─────────────────────────────────────────────────────────────
-    #  JAR CREATION RECEIPT
-    # ─────────────────────────────────────────────────────────────
-
     @transaction.atomic
     def process_jar_creation_receipt(self, jar, receipt: dict) -> dict:
         """
@@ -189,13 +140,11 @@ class ReceiptProcessor:
         if jar.is_verified_on_chain:
             return {"status": "already_verified", "jar_id": jar.id}
 
-        # Validate (revert, contract address, confirmations)
         self.service.validate_receipt(receipt, jar.creation_tx_hash)
 
         block_number = receipt["blockNumber"]
         block_ts     = self.service.get_block_timestamp(block_number)
 
-        # Extract chain_jar_id from JarCreated event
         event_args = self.service.decode_jar_created_event(receipt)
         chain_jar_id = None
         if event_args:
@@ -216,7 +165,6 @@ class ReceiptProcessor:
 
         jar.save(update_fields=update_fields)
 
-        # TransactionLog
         gas_price_gwei = self.service.get_gas_price_gwei(receipt)
         tx_log = self._upsert_transaction_log(
             tx_hash=jar.creation_tx_hash,
@@ -244,9 +192,6 @@ class ReceiptProcessor:
             "block_number": block_number,
         }
 
-    # ─────────────────────────────────────────────────────────────
-    #  PRIVATE HELPERS
-    # ─────────────────────────────────────────────────────────────
 
     def _upsert_transaction_log(
         self,
@@ -260,10 +205,7 @@ class ReceiptProcessor:
         jar_id_ref: int | None = None,
         donation_id_ref: int | None = None,
     ):
-        """
-        Create or update a TransactionLog record for the given tx_hash.
-        Uses update_or_create so it's safe to call multiple times.
-        """
+
         from apps.blockchain.models import TransactionLog, TxLogStatus
 
         block_number = receipt.get("blockNumber")
@@ -330,15 +272,8 @@ class ReceiptProcessor:
             )
 
 
-# ─────────────────────────────────────────────────────────────────
-#  HELPERS
-# ─────────────────────────────────────────────────────────────────
 
 def _make_json_safe(data: Any) -> Any:
-    """
-    Recursively convert web3.py types (HexBytes, AttributeDict, etc.)
-    to JSON-serialisable Python primitives.
-    """
     if isinstance(data, Mapping):
         return {k: _make_json_safe(v) for k, v in data.items()}
     if isinstance(data, (list, tuple)):

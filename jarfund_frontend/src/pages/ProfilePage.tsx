@@ -22,7 +22,7 @@ import {
 import { ROUTES }        from '@/lib/constants'
 import { formatMatic, timeAgo, cn } from '@/utils/format'
 
-// ── Edit profile schema ───────────────────────────────────────────
+// Edit profile schema 
 const editSchema = z.object({
   username:   z.string().max(30, 'Max 30 chars').optional().or(z.literal('')),
   bio:        z.string().max(200, 'Max 200 chars').optional().or(z.literal('')),
@@ -30,7 +30,7 @@ const editSchema = z.object({
 })
 type EditForm = z.infer<typeof editSchema>
 
-// ── Tab type ──────────────────────────────────────────────────────
+// Tab type 
 type Tab = 'jars' | 'donations'
 
 export default function ProfilePage() {
@@ -81,7 +81,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-10">
 
-      {/* ── Profile header ─────────────────────────────────────── */}
+      {/*Profile header  */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -193,7 +193,7 @@ export default function ProfilePage() {
         </div>
       </motion.div>
 
-      {/* ── Donation stats bar ──────────────────────────────────── */}
+      {/* Donation stats bar  */}
       {donStats && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -215,7 +215,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      {/* ── Tabs ────────────────────────────────────────────────── */}
+      {/* Tabs  */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
 
         <div className="flex items-center justify-between mb-6">
@@ -245,7 +245,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* ── Jars tab ─────────────────────────────────────── */}
+        {/* Jars tab  */}
         {tab === 'jars' && (
           jarsLoading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -277,7 +277,7 @@ export default function ProfilePage() {
           )
         )}
 
-        {/* ── Donations tab ──────────────────────────────────── */}
+        {/* Donations tab  */}
         {tab === 'donations' && (
           donsLoading ? (
             <div className="glass-panel p-4 space-y-1">

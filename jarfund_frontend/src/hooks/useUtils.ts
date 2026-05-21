@@ -1,12 +1,9 @@
-// ═══════════════════════════════════════════════════════════════
 //  JarFund — Small Utility Hooks
-// ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { copyToClipboard } from '@/utils/format'
 
-// ── useCountdown ──────────────────────────────────────────────────
-// Counts down seconds from a deadline ISO string.
+// useCountdown 
 // Returns { days, hours, minutes, seconds, isExpired }.
 
 interface CountdownResult {
@@ -46,7 +43,7 @@ export function useCountdown(deadline: string | null): CountdownResult {
   return state
 }
 
-// ── useClipboard ──────────────────────────────────────────────────
+// useClipboard 
 // Copy text and show temporary "Copied!" state.
 
 export function useClipboard(timeout = 1500) {
@@ -70,7 +67,7 @@ export function useClipboard(timeout = 1500) {
   return { copy, copied }
 }
 
-// ── useLocalStorage ───────────────────────────────────────────────
+// useLocalStorage 
 // Type-safe localStorage with SSR safety.
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
@@ -99,7 +96,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   return [value, set, remove] as const
 }
 
-// ── useDebounce ───────────────────────────────────────────────────
+// useDebounce 
 // Debounce a rapidly-changing value (search input, etc).
 
 export function useDebounce<T>(value: T, delay = 400): T {
@@ -113,7 +110,7 @@ export function useDebounce<T>(value: T, delay = 400): T {
   return debounced
 }
 
-// ── useMediaQuery ─────────────────────────────────────────────────
+// useMediaQuery 
 // Reactive CSS media query hook.
 
 export function useMediaQuery(query: string): boolean {
@@ -136,7 +133,7 @@ export const useIsMobile  = () => useMediaQuery('(max-width: 767px)')
 export const useIsTablet  = () => useMediaQuery('(min-width: 768px) and (max-width: 1023px)')
 export const useIsDesktop = () => useMediaQuery('(min-width: 1024px)')
 
-// ── useScrollLock ─────────────────────────────────────────────────
+// useScrollLock
 // Lock body scroll when a modal is open.
 
 export function useScrollLock(locked: boolean) {
@@ -148,7 +145,7 @@ export function useScrollLock(locked: boolean) {
   }, [locked])
 }
 
-// ── useOnClickOutside ─────────────────────────────────────────────
+// useOnClickOutside 
 // Fire callback when user clicks outside the given ref.
 
 export function useOnClickOutside<T extends HTMLElement>(
@@ -169,7 +166,7 @@ export function useOnClickOutside<T extends HTMLElement>(
   }, [ref, handler])
 }
 
-// ── usePrevious ───────────────────────────────────────────────────
+// usePrevious 
 // Keep track of the previous value of a variable.
 
 export function usePrevious<T>(value: T): T | undefined {

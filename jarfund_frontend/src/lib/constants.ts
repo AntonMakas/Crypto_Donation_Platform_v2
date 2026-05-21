@@ -1,10 +1,8 @@
-// ═══════════════════════════════════════════════════════════════
 //  JarFund — App Constants
-// ═══════════════════════════════════════════════════════════════
 
 import type { JarCategory, JarStatus } from '@/types'
 
-// ── Environment ──────────────────────────────────────────────────
+// Environment 
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string
   ?? 'http://localhost:8000/api/v1'
@@ -19,7 +17,7 @@ export const RPC_URL          = import.meta.env.VITE_RPC_URL as string
 export const WALLETCONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string ?? ''
 export const DEBUG            = import.meta.env.VITE_DEBUG === 'true'
 
-// ── Polygon Amoy chain definition ────────────────────────────────
+// Polygon Amoy chain definition 
 
 export const POLYGON_AMOY_CHAIN = {
   id:        80002,
@@ -62,7 +60,7 @@ export const POLYGON_MAINNET_CHAIN = {
   },
 } as const
 
-// ── Donation / Jar constraints (mirrors smart contract) ──────────
+// Donation / Jar constraints (mirrors smart contract) 
 
 export const MIN_DONATION_MATIC  = 0.001
 export const MIN_TARGET_MATIC    = 0.01
@@ -73,7 +71,7 @@ export const MAX_TITLE_LENGTH    = 120
 export const MAX_DESCRIPTION_LENGTH = 1000
 export const MAX_MESSAGE_LENGTH  = 280
 
-// ── Jar categories ────────────────────────────────────────────────
+//  Jar categories 
 
 export const JAR_CATEGORIES: Array<{
   value: JarCategory
@@ -92,7 +90,7 @@ export const JAR_CATEGORIES: Array<{
   { value: 'other',        label: 'Other',         emoji: '✨' },
 ]
 
-// ── Jar status display ────────────────────────────────────────────
+// Jar status display
 
 export const JAR_STATUS_CONFIG: Record<JarStatus, {
   label:  string
@@ -106,7 +104,7 @@ export const JAR_STATUS_CONFIG: Record<JarStatus, {
   withdrawn: { label: 'Withdrawn', color: '#f87171', bgColor: 'rgba(239,68,68,0.12)',   dot: 'bg-danger'   },
 }
 
-// ── Routes ────────────────────────────────────────────────────────
+// Routes 
 
 export const ROUTES = {
   HOME:       '/',
@@ -117,7 +115,7 @@ export const ROUTES = {
   TX:         (hash: string) => `/tx/${hash}`,
 } as const
 
-// ── Local storage keys ────────────────────────────────────────────
+// Local storage keys 
 
 export const STORAGE_KEYS = {
   ACCESS_TOKEN:  'jarfund_access',
@@ -126,7 +124,7 @@ export const STORAGE_KEYS = {
   THEME:         'jarfund_theme',
 } as const
 
-// ── Query cache keys ──────────────────────────────────────────────
+// Query cache keys 
 
 export const QUERY_KEYS = {
   JARS:           ['jars'] as const,
@@ -143,7 +141,7 @@ export const QUERY_KEYS = {
   USER:           (wallet: string) => ['user', wallet] as const,
 } as const
 
-// ── Animation durations (ms) ──────────────────────────────────────
+// Animation durations (ms) 
 
 export const ANIMATION = {
   FAST:   150,
@@ -152,11 +150,11 @@ export const ANIMATION = {
   STAGGER: 75,
 } as const
 
-// ── Pagination ────────────────────────────────────────────────────
+// Pagination 
 
 export const DEFAULT_PAGE_SIZE = 12
 
-// ── Polling intervals ─────────────────────────────────────────────
+// Polling intervals 
 
 export const POLL_INTERVALS = {
   TX_PENDING:    10_000,  // 10s — poll for pending tx confirmation

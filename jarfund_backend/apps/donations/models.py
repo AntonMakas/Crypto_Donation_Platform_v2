@@ -1,12 +1,3 @@
-"""
-Donation model — records every donation made to a Jar.
-
-Each Donation corresponds to one donate() transaction on-chain.
-The backend stores the tx hash immediately (status: PENDING) and a
-Celery task verifies it against the RPC node within seconds.
-
-Database table:  donations_donation
-"""
 from decimal import Decimal
 
 from django.conf import settings
@@ -29,19 +20,11 @@ class TxStatus(models.TextChoices):
 
 
 class Donation(models.Model):
-    """
-    A single MATIC donation to a fundraising Jar.
 
-    Created by the frontend immediately after the user submits the
-    MetaMask transaction. The tx_hash is stored straight away with
-    status=PENDING. A Celery worker then polls the RPC node and
-    updates the record to CONFIRMED or FAILED.
-    """
-
-    # ── Identity ──────────────────────────────────────────────────
+    # Identity
     id = models.BigAutoField(primary_key=True)
 
-    # ── Relations ─────────────────────────────────────────────────
+    # Relations
     jar = models.ForeignKey(
         "jars.Jar",
         on_delete=models.PROTECT,
@@ -59,7 +42,7 @@ class Donation(models.Model):
         help_text="Linked user account (null if donor wallet not registered).",
     )
 
-    # ── Wallet ────────────────────────────────────────────────────
+    # Wallet 
     donor_wallet = models.CharField(
         max_length=42,
         db_index=True,
@@ -67,7 +50,7 @@ class Donation(models.Model):
         help_text="Checksum Ethereum address of the donor.",
     )
 
-    # ── Amount ────────────────────────────────────────────────────
+    # Amount 
     amount_matic = models.DecimalField(
         max_digits=20,
         decimal_places=6,
@@ -84,7 +67,7 @@ class Donation(models.Model):
         help_text="Exact donation amount in wei (string to avoid float precision loss).",
     )
 
-    # ── Blockchain ────────────────────────────────────────────────
+    # Blockchain
     tx_hash = models.CharField(
         max_length=66,
         unique=True,
@@ -131,7 +114,7 @@ class Donation(models.Model):
         help_text="Number of block confirmations at last verification check.",
     )
 
-    # ── Verification ──────────────────────────────────────────────
+    # Verification
     is_verified = models.BooleanField(
         default=False,
         db_index=True,
@@ -156,7 +139,7 @@ class Donation(models.Model):
         help_text="Last time the Celery worker checked this transaction.",
     )
 
-    # ── Message ───────────────────────────────────────────────────
+    # Message
     message = models.CharField(
         max_length=280,
         blank=True,
@@ -169,7 +152,7 @@ class Donation(models.Model):
         help_text="If True, donor wallet is hidden from public API responses.",
     )
 
-    # ── Timestamps ────────────────────────────────────────────────
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -197,7 +180,7 @@ class Donation(models.Model):
             f"to Jar #{self.jar_id} ({self.tx_status})"
         )
 
-    # ── Properties ────────────────────────────────────────────────
+    # Properties
     @property
     def is_pending(self) -> bool:
         return self.tx_status == TxStatus.PENDING
@@ -219,7 +202,7 @@ class Donation(models.Model):
             return "Anonymous"
         return self.donor_wallet
 
-    # ── Business logic ────────────────────────────────────────────
+    # Business logic
     def mark_confirmed(
         self,
         block_number: int,

@@ -1,12 +1,10 @@
-// ═══════════════════════════════════════════════════════════════
 //  JarFund — Axios API Client
 //  Handles:
-//   · Base URL config
-//   · JWT access token attachment
-//   · Automatic token refresh on 401
-//   · Typed request/response helpers
-//   · Error normalisation
-// ═══════════════════════════════════════════════════════════════
+//  Base URL config
+//  JWT access token attachment
+//  Automatic token refresh on 401
+//  Typed request/response helpers
+//  Error normalisation
 
 import axios, {
   type AxiosInstance,
@@ -17,7 +15,7 @@ import axios, {
 import { API_BASE_URL, STORAGE_KEYS } from '@/lib/constants'
 import type { ApiError, AuthTokens } from '@/types'
 
-// ── Axios instance ────────────────────────────────────────────────
+// Axios instance 
 
 const apiClient: AxiosInstance = axios.create({
   baseURL:         API_BASE_URL,
@@ -28,7 +26,7 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: false,
 })
 
-// ── Token helpers ─────────────────────────────────────────────────
+// Token helpers 
 
 export const tokenStorage = {
   getAccess():    string | null { return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) },
@@ -44,7 +42,7 @@ export const tokenStorage = {
   },
 }
 
-// ── Request interceptor — attach Bearer token ─────────────────────
+// Request interceptor — attach Bearer token 
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -57,7 +55,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
-// ── Response interceptor — auto-refresh on 401 ────────────────────
+// Response interceptor — auto-refresh on 401 
 
 let isRefreshing = false
 let pendingQueue: Array<{
@@ -130,7 +128,7 @@ apiClient.interceptors.response.use(
   },
 )
 
-// ── Typed response unwrapper ──────────────────────────────────────
+// Typed response unwrapper 
 
 /**
  * Extract a human-readable error message from an axios error.
@@ -163,7 +161,7 @@ export function extractFieldErrors(err: unknown): Record<string, string> {
   return {}
 }
 
-// ── Auth endpoints ────────────────────────────────────────────────
+// Auth endpoints 
 
 export const authApi = {
   getNonce: (wallet: string) =>
@@ -190,7 +188,7 @@ export const authApi = {
     apiClient.patch('/auth/profile/', data).then(r => r.data.data),
 }
 
-// ── Jar endpoints ─────────────────────────────────────────────────
+// Jar endpoints 
 
 export const jarsApi = {
   list: (params?: Record<string, unknown>) =>
@@ -221,7 +219,7 @@ export const jarsApi = {
     apiClient.get('/jars/my/', { params }).then(r => r.data),
 }
 
-// ── Donations endpoints ───────────────────────────────────────────
+// Donations endpoints 
 
 export const donationsApi = {
   create: (payload: unknown) =>
@@ -240,7 +238,7 @@ export const donationsApi = {
     apiClient.get('/donations/leaderboard/', { params: { limit } }).then(r => r.data.data),
 }
 
-// ── Blockchain endpoints ──────────────────────────────────────────
+// Blockchain endpoints
 
 export const blockchainApi = {
   verify: (txHash: string) =>

@@ -1,21 +1,8 @@
-"""
-Serializers for the blockchain app.
-
-  TxVerifySerializer       — verify a single transaction hash
-  TransactionLogSerializer — read-only audit log entry
-  ContractEventSerializer  — decoded on-chain event
-  PlatformStatsSerializer  — aggregate platform statistics
-"""
 import re
 from rest_framework import serializers
 from .models import TransactionLog, ContractEvent
 
 _TX_HASH_RE = re.compile(r"^0x[0-9a-fA-F]{64}$")
-
-
-# ─────────────────────────────────────────────────────────────────
-#  TX VERIFY REQUEST
-# ─────────────────────────────────────────────────────────────────
 
 class TxVerifyRequestSerializer(serializers.Serializer):
     """
@@ -31,16 +18,7 @@ class TxVerifyRequestSerializer(serializers.Serializer):
             )
         return value
 
-
-# ─────────────────────────────────────────────────────────────────
-#  TX STATUS RESPONSE
-# ─────────────────────────────────────────────────────────────────
-
 class TxStatusSerializer(serializers.Serializer):
-    """
-    GET /blockchain/tx/{tx_hash}/
-    Returns current verification status of a transaction.
-    """
     tx_hash         = serializers.CharField()
     status          = serializers.CharField()
     is_verified     = serializers.BooleanField()
@@ -55,11 +33,6 @@ class TxStatusSerializer(serializers.Serializer):
     source          = serializers.CharField(
         help_text="'db' if from database, 'rpc' if freshly fetched from node."
     )
-
-
-# ─────────────────────────────────────────────────────────────────
-#  TRANSACTION LOG
-# ─────────────────────────────────────────────────────────────────
 
 class TransactionLogSerializer(serializers.ModelSerializer):
     explorer_url = serializers.ReadOnlyField()
@@ -78,11 +51,6 @@ class TransactionLogSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-
-# ─────────────────────────────────────────────────────────────────
-#  CONTRACT EVENTS
-# ─────────────────────────────────────────────────────────────────
-
 class ContractEventSerializer(serializers.ModelSerializer):
     class Meta:
         model  = ContractEvent
@@ -94,16 +62,7 @@ class ContractEventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-
-# ─────────────────────────────────────────────────────────────────
-#  PLATFORM STATS
-# ─────────────────────────────────────────────────────────────────
-
 class PlatformStatsSerializer(serializers.Serializer):
-    """
-    GET /blockchain/stats/
-    Aggregate platform-wide statistics — shown on the landing page.
-    """
     total_jars          = serializers.IntegerField()
     active_jars         = serializers.IntegerField()
     completed_jars      = serializers.IntegerField()

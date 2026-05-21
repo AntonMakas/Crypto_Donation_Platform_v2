@@ -1,6 +1,3 @@
-"""
-Custom Django field validators for the jars app.
-"""
 import re
 from decimal import Decimal
 
@@ -12,10 +9,6 @@ _ETH_ADDRESS_RE = re.compile(r"^0x[0-9a-fA-F]{40}$")
 
 
 def validate_wallet_address(value: str) -> None:
-    """
-    Validate that the value is a well-formed Ethereum address.
-    Accepts both checksummed and lowercase formats.
-    """
     if not value:
         raise ValidationError("Wallet address cannot be empty.")
 
@@ -27,10 +20,6 @@ def validate_wallet_address(value: str) -> None:
 
 
 def validate_future_deadline(value) -> None:
-    """
-    Validate that the deadline is at least 1 hour in the future
-    (mirrors the smart contract MIN_DEADLINE_GAP check).
-    """
     min_deadline = timezone.now() + timezone.timedelta(hours=1)
     if value < min_deadline:
         raise ValidationError(
@@ -39,10 +28,6 @@ def validate_future_deadline(value) -> None:
 
 
 def validate_tx_hash(value: str) -> None:
-    """
-    Validate that a value looks like a valid Ethereum transaction hash.
-    Format: 0x followed by exactly 64 hex characters.
-    """
     pattern = re.compile(r"^0x[0-9a-fA-F]{64}$")
     if not pattern.match(value):
         raise ValidationError(
@@ -58,8 +43,8 @@ def validate_positive_matic(value: Decimal) -> None:
 
 
 def validate_min_donation(value: Decimal) -> None:
-    """Minimum donation is 0.001 MATIC — matches smart contract MIN_DONATION."""
+    """Minimum donation is 0.001 pol — matches smart contract MIN_DONATION."""
     if value < Decimal("0.001"):
         raise ValidationError(
-            f"Minimum donation is 0.001 MATIC. Got: {value}."
+            f"Minimum donation is 0.001 pol. Got: {value}."
         )

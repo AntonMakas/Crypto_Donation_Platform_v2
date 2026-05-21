@@ -1,14 +1,8 @@
-"""
-Reusable view mixins shared across all JarFund API views.
-"""
+# Checl cheksum and one standart response format
 from rest_framework.response import Response
 
 
 class SuccessResponseMixin:
-    """
-    Wraps all successful responses in a consistent envelope:
-        { "success": true, "data": { ... } }
-    """
     def success_response(self, data, status=200, message=None):
         payload = {"success": True, "data": data}
         if message:
@@ -17,15 +11,7 @@ class SuccessResponseMixin:
 
 
 class WalletValidationMixin:
-    """
-    Provides helper methods for validating Ethereum wallet addresses.
-    Used in views that accept wallet addresses as parameters.
-    """
     def validate_wallet_address(self, address: str) -> str:
-        """
-        Validate and checksum an Ethereum address.
-        Raises ValidationError if invalid.
-        """
         from web3 import Web3
         from rest_framework.exceptions import ValidationError
 

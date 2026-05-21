@@ -1,13 +1,9 @@
-// ═══════════════════════════════════════════════════════════════
 //  AuthContext
-//
-//  Manages:
-//   · JWT access / refresh tokens (localStorage)
-//   · Authenticated user profile
-//   · MetaMask sign-in flow: nonce → sign → verify → store tokens
-//   · Logout + token refresh
-//   · Listens for 'jarfund:logout' event fired by axios interceptor
-// ═══════════════════════════════════════════════════════════════
+//  JWT access / refresh tokens (localStorage)
+//  Authenticated user profile
+//  MetaMask sign-in flow: nonce → sign → verify → store tokens
+//  Logout + token refresh
+//  Listens for 'jarfund:logout' event fired by axios interceptor
 
 import {
   createContext,
@@ -24,7 +20,7 @@ import { authApi, tokenStorage, extractApiError } from '@/lib/api'
 import { STORAGE_KEYS } from '@/lib/constants'
 import type { User } from '@/types'
 
-// ── Types ─────────────────────────────────────────────────────────
+// Types 
 
 type AuthStatus = 'idle' | 'signing' | 'verifying' | 'authenticated' | 'error'
 
@@ -41,11 +37,11 @@ interface AuthContextValue {
   updateProfile: (data: Partial<Pick<User, 'username' | 'bio' | 'avatar_url'>>) => Promise<void>
 }
 
-// ── Context ───────────────────────────────────────────────────────
+// Context 
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// ── Provider ──────────────────────────────────────────────────────
+// Provider 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { address, isConnected } = useAccount()
@@ -66,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInInProgress = useRef(false)
 
-  // ── Persist user to localStorage ─────────────────────────────
+  // Persist user to localStorage 
 
   const saveUser = useCallback((u: User | null) => {
     setUser(u)
@@ -74,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else   localStorage.removeItem(STORAGE_KEYS.USER)
   }, [])
 
-  // ── Listen for forced logout from axios interceptor ───────────
+  // Listen for forced logout from axios interceptor 
 
   useEffect(() => {
     const handleForceLogout = () => {
@@ -86,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('jarfund:logout', handleForceLogout)
   }, [saveUser])
 
-  // ── Verify existing token on mount ────────────────────────────
+  // Verify existing token on mount 
 
   useEffect(() => {
     if (!tokenStorage.getAccess() || user) return
@@ -99,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Sign in ──────────────────────────────────────────────────
+  // Sign in 
 
   const signIn = useCallback(async () => {
     if (!address || !isConnected) {
@@ -152,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [address, isConnected, signMessageAsync, saveUser])
 
-  // ── Sign out ─────────────────────────────────────────────────
+  // Sign out 
 
   const signOut = useCallback(async () => {
     const refresh = tokenStorage.getRefresh()
@@ -166,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success('Signed out.')
   }, [saveUser, disconnect])
 
-  // ── Refresh profile ───────────────────────────────────────────
+  // Refresh profile 
 
   const refreshProfile = useCallback(async () => {
     if (!tokenStorage.getAccess()) return
@@ -178,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [saveUser])
 
-  // ── Update profile ────────────────────────────────────────────
+  // Update profile 
 
   const updateProfile = useCallback(async (
     data: Partial<Pick<User, 'username' | 'bio' | 'avatar_url'>>
@@ -201,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-// ── Hook ──────────────────────────────────────────────────────────
+// Hook 
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)

@@ -7,9 +7,7 @@ from pathlib import Path
 
 import environ
 
-# ─────────────────────────────────────────────────────────────────
 #  PATHS
-# ─────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Initialise django-environ
@@ -22,17 +20,13 @@ env = environ.Env(
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 
-# ─────────────────────────────────────────────────────────────────
 #  SECURITY
-# ─────────────────────────────────────────────────────────────────
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 
-# ─────────────────────────────────────────────────────────────────
 #  APPLICATIONS
-# ─────────────────────────────────────────────────────────────────
 DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -62,9 +56,7 @@ LOCAL_APPS = [
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 
-# ─────────────────────────────────────────────────────────────────
 #  MIDDLEWARE
-# ─────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -78,17 +70,13 @@ MIDDLEWARE = [
 ]
 
 
-# ─────────────────────────────────────────────────────────────────
 #  URL CONFIGURATION
-# ─────────────────────────────────────────────────────────────────
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 
-# ─────────────────────────────────────────────────────────────────
 #  TEMPLATES
-# ─────────────────────────────────────────────────────────────────
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -106,9 +94,7 @@ TEMPLATES = [
 ]
 
 
-# ─────────────────────────────────────────────────────────────────
 #  DATABASE
-# ─────────────────────────────────────────────────────────────────
 DATABASES = {
     "default": env.db(
         "DATABASE_URL",
@@ -119,9 +105,7 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True  # Wrap each request in a transac
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 
 
-# ─────────────────────────────────────────────────────────────────
 #  CACHE (Redis)
-# ─────────────────────────────────────────────────────────────────
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -135,9 +119,7 @@ CACHES = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
 #  AUTHENTICATION
-# ─────────────────────────────────────────────────────────────────
 AUTH_USER_MODEL = "users.User"
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -148,9 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# ─────────────────────────────────────────────────────────────────
 #  DJANGO REST FRAMEWORK
-# ─────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -186,9 +166,7 @@ REST_FRAMEWORK = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
 #  JWT SETTINGS
-# ─────────────────────────────────────────────────────────────────
 from datetime import timedelta
 
 SIMPLE_JWT = {
@@ -203,9 +181,7 @@ SIMPLE_JWT = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
 #  CORS
-# ─────────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     default=[
@@ -230,9 +206,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 
-# ─────────────────────────────────────────────────────────────────
 #  CELERY (Async Tasks)
-# ─────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_CACHE_BACKEND = "django-cache"
@@ -279,9 +253,7 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
 #  BLOCKCHAIN SETTINGS
-# ─────────────────────────────────────────────────────────────────
 BLOCKCHAIN = {
     "POLYGON_AMOY_RPC_URL": env(
         "POLYGON_AMOY_RPC_URL",
@@ -307,9 +279,7 @@ BLOCKCHAIN = {
 CONTRACT_ABI_PATH = BASE_DIR / "apps" / "blockchain" / "abi" / "JarFund.json"
 
 
-# ─────────────────────────────────────────────────────────────────
 #  DRF SPECTACULAR (OpenAPI docs)
-# ─────────────────────────────────────────────────────────────────
 SPECTACULAR_SETTINGS = {
     "TITLE": "JarFund API",
     "DESCRIPTION": (
@@ -329,9 +299,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
 #  STATIC & MEDIA FILES
-# ─────────────────────────────────────────────────────────────────
 STATIC_URL  = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
@@ -341,24 +309,18 @@ MEDIA_URL  = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
-# ─────────────────────────────────────────────────────────────────
 #  INTERNATIONALISATION
-# ─────────────────────────────────────────────────────────────────
 LANGUAGE_CODE = "en-us"
 TIME_ZONE     = "UTC"
 USE_I18N      = True
 USE_TZ        = True
 
 
-# ─────────────────────────────────────────────────────────────────
 #  DEFAULT AUTO FIELD
-# ─────────────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# ─────────────────────────────────────────────────────────────────
 #  LOGGING
-# ─────────────────────────────────────────────────────────────────
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

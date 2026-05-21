@@ -20,7 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "exactOptionalPropertyTypes": false,
 
-    /* Path aliases — must match vite.config.ts */
+    /* Path aliases  */
     "baseUrl":            ".",
     "paths": {
       "@/*":           ["./src/*"],

@@ -1,10 +1,3 @@
-"""
-Serializers for the donations app.
-
-  DonationCreateSerializer — validates and records a new donation tx
-  DonationListSerializer   — paginated list (jar detail, profile)
-  DonationDetailSerializer — single donation with full blockchain data
-"""
 import re
 from decimal import Decimal
 
@@ -17,18 +10,7 @@ from apps.donations.models import Donation, TxStatus
 _TX_HASH_RE = re.compile(r"^0x[0-9a-fA-F]{64}$")
 _ETH_RE     = re.compile(r"^0x[0-9a-fA-F]{40}$")
 
-
-# ─────────────────────────────────────────────────────────────────
-#  DONATION CREATE
-# ─────────────────────────────────────────────────────────────────
-
 class DonationCreateSerializer(serializers.ModelSerializer):
-    """
-    POST /donations/
-
-    Called immediately after the user submits the donate() transaction.
-    The tx is stored as PENDING; Celery verifies it in the background.
-    """
     jar_id       = serializers.IntegerField(write_only=True)
     donor_wallet = serializers.CharField(max_length=42)
     amount_wei   = serializers.CharField(
@@ -130,16 +112,7 @@ class DonationCreateSerializer(serializers.ModelSerializer):
 
         return donation
 
-
-# ─────────────────────────────────────────────────────────────────
-#  DONATION LIST
-# ─────────────────────────────────────────────────────────────────
-
 class DonationListSerializer(serializers.ModelSerializer):
-    """
-    Paginated list item — used on jar detail page and profile page.
-    Respects anonymity flag on donor_wallet.
-    """
     donor_wallet = serializers.SerializerMethodField()
     explorer_url = serializers.ReadOnlyField()
     jar_title    = serializers.SerializerMethodField()
@@ -167,13 +140,7 @@ class DonationListSerializer(serializers.ModelSerializer):
     def get_jar_title(self, obj) -> str:
         return obj.jar.title
 
-
-# ─────────────────────────────────────────────────────────────────
-#  DONATION DETAIL
-# ─────────────────────────────────────────────────────────────────
-
 class DonationDetailSerializer(DonationListSerializer):
-    """Full donation record — includes all blockchain metadata."""
     class Meta(DonationListSerializer.Meta):
         fields = DonationListSerializer.Meta.fields + [
             "amount_wei",
@@ -183,16 +150,7 @@ class DonationDetailSerializer(DonationListSerializer):
             "updated_at",
         ]
 
-
-# ─────────────────────────────────────────────────────────────────
-#  DONATION STATS (for jar detail sidebar)
-# ─────────────────────────────────────────────────────────────────
-
 class DonationStatsSerializer(serializers.Serializer):
-    """
-    GET /jars/{id}/donation-stats/
-    Aggregated donation statistics for a jar.
-    """
     total_confirmed   = serializers.DecimalField(max_digits=20, decimal_places=6)
     total_pending     = serializers.DecimalField(max_digits=20, decimal_places=6)
     donor_count       = serializers.IntegerField()

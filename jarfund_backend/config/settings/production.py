@@ -1,7 +1,7 @@
 """
 Production settings for JarFund.
 Extends base.py with hardened security settings.
-Deploy on: Railway, Render, Heroku, or any PaaS.
+Deploy on: Railway
 """
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -10,19 +10,14 @@ from sentry_sdk.integrations.redis import RedisIntegration
 
 from .base import *  # noqa: F401, F403
 
-# ─────────────────────────────────────────────────────────────────
 #  CORE
-# ─────────────────────────────────────────────────────────────────
 DEBUG = False
 
-SECRET_KEY = env("SECRET_KEY")  # Must be set — no default in production
+SECRET_KEY = env("SECRET_KEY") 
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-
-# ─────────────────────────────────────────────────────────────────
 #  SECURITY HARDENING
-# ─────────────────────────────────────────────────────────────────
 SECURE_PROXY_SSL_HEADER        = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT            = True
 SESSION_COOKIE_SECURE          = True
@@ -36,9 +31,7 @@ SECURE_HSTS_PRELOAD            = True
 SECURE_REFERRER_POLICY         = "strict-origin-when-cross-origin"
 
 
-# ─────────────────────────────────────────────────────────────────
 #  CORS — only allow the actual frontend domain
-# ─────────────────────────────────────────────────────────────────
 # Get CORS origins from environment, with fallback to base defaults
 _cors_origins = env.list("CORS_ALLOWED_ORIGINS", default=[])
 if not _cors_origins:
@@ -53,12 +46,7 @@ CORS_ALLOWED_ORIGINS = _cors_origins
 CORS_ALLOW_ALL_ORIGINS = False
 
 
-# ─────────────────────────────────────────────────────────────────
-#  EMAIL
-# ─────────────────────────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────────
 #  SENTRY (Error Tracking)
-# ─────────────────────────────────────────────────────────────────
 SENTRY_DSN = env("SENTRY_DSN", default="")
 if SENTRY_DSN:
     sentry_sdk.init(
@@ -74,9 +62,7 @@ if SENTRY_DSN:
     )
 
 
-# ─────────────────────────────────────────────────────────────────
 #  THROTTLING — tighter in production
-# ─────────────────────────────────────────────────────────────────
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {  # noqa: F405
     "anon": "30/minute",
     "user": "120/minute",
@@ -91,13 +77,9 @@ REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
 ]
 
 
-# ─────────────────────────────────────────────────────────────────
 #  ADMIN URL — obscure in production
-# ─────────────────────────────────────────────────────────────────
 ADMIN_URL = env("ADMIN_URL", default="admin-jarfund-secure/")
 
 
-# ─────────────────────────────────────────────────────────────────
 #  LOGGING — structured for log aggregators
-# ─────────────────────────────────────────────────────────────────
 LOGGING["root"]["level"] = "WARNING"  # noqa: F405

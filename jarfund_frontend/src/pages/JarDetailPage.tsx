@@ -31,7 +31,7 @@ export default function JarDetailPage() {
   return <JarDetail jar={jar} />
 }
 
-// ── Main detail component ─────────────────────────────────────────
+// Main detail component 
 
 function JarDetail({ jar }: { jar: Jar }) {
   const { address } = useAccount()
@@ -76,7 +76,7 @@ function JarDetail({ jar }: { jar: Jar }) {
 
       <div className="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
 
-        {/* ── LEFT COLUMN ──────────────────────────────────────── */}
+        {/* LEFT COLUMN  */}
         <div className="space-y-8">
 
           {/* Title block */}
@@ -210,7 +210,7 @@ function JarDetail({ jar }: { jar: Jar }) {
           </motion.div>
         </div>
 
-        {/* ── RIGHT COLUMN: Donation form ───────────────────────── */}
+        {/* RIGHT COLUMN: Donation form  */}
         <motion.div
           initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
           className="lg:sticky lg:top-24"
@@ -228,7 +228,7 @@ function JarDetail({ jar }: { jar: Jar }) {
   )
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────
+//  Skeleton 
 
 function JarDetailSkeleton() {
   return (

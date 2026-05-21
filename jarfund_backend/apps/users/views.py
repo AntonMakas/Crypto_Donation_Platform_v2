@@ -1,14 +1,3 @@
-"""
-Views for the users app.
-
-Endpoints:
-  GET  /auth/nonce/         — get signing challenge for a wallet
-  POST /auth/verify/        — verify signature → JWT tokens
-  POST /auth/refresh/       — refresh access token
-  POST /auth/logout/        — blacklist refresh token
-  GET  /auth/profile/       — get own profile
-  PATCH /auth/profile/      — update own profile
-"""
 import logging
 
 from django.contrib.auth import get_user_model
@@ -35,24 +24,12 @@ from .serializers import (
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  NONCE
-# ─────────────────────────────────────────────────────────────────
-
 class NonceLimitThrottle(AnonRateThrottle):
     rate = "30/minute"
 
 
 @method_decorator(never_cache, name="dispatch")
 class NonceView(APIView):
-    """
-    GET /auth/nonce/?wallet=0x…
-
-    Returns the current nonce for a wallet address.
-    Creates a new User if this is the wallet's first visit.
-    The frontend must have the user sign the returned `message` string.
-    """
     permission_classes = [AllowAny]
     throttle_classes   = [NonceLimitThrottle]
 
@@ -91,25 +68,11 @@ class NonceView(APIView):
             "message": message,
         })
 
-
-# ─────────────────────────────────────────────────────────────────
-#  VERIFY SIGNATURE → JWT
-# ─────────────────────────────────────────────────────────────────
-
 class VerifyLimitThrottle(AnonRateThrottle):
     rate = "10/minute"
 
 
 class WalletVerifyView(APIView):
-    """
-    POST /auth/verify/
-
-    Body: { "wallet": "0x…", "signature": "0x…" }
-    Response: { "access": "…", "refresh": "…", "user": { … } }
-
-    Verifies the MetaMask signature against the stored nonce.
-    On success: marks user as verified, rotates nonce, returns JWTs.
-    """
     permission_classes = [AllowAny]
     throttle_classes   = [VerifyLimitThrottle]
 
@@ -147,11 +110,6 @@ class WalletVerifyView(APIView):
             },
         })
 
-
-# ─────────────────────────────────────────────────────────────────
-#  TOKEN REFRESH
-# ─────────────────────────────────────────────────────────────────
-
 class TokenRefreshView(APIView):
     """
     POST /auth/refresh/
@@ -179,11 +137,6 @@ class TokenRefreshView(APIView):
                 {"success": False, "error": {"code": "invalid_token", "message": str(e)}},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-
-# ─────────────────────────────────────────────────────────────────
-#  LOGOUT (blacklist refresh token)
-# ─────────────────────────────────────────────────────────────────
 
 class LogoutView(APIView):
     """
@@ -216,16 +169,7 @@ class LogoutView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-
-# ─────────────────────────────────────────────────────────────────
-#  PROFILE
-# ─────────────────────────────────────────────────────────────────
-
 class ProfileView(APIView):
-    """
-    GET  /auth/profile/ — returns own full profile
-    PATCH /auth/profile/ — updates username, bio, avatar_url
-    """
     permission_classes = [IsAuthenticated]
 
     @extend_schema(tags=["auth"], summary="Get own profile", responses={200: UserProfileSerializer})

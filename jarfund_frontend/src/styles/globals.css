@@ -1,13 +1,12 @@
-/* ═══════════════════════════════════════════════════════════════
+/* 
    JarFund Global Styles
-   Design: Dark glassmorphism · Purple/indigo palette · Syne + DM Sans
-   ═══════════════════════════════════════════════════════════════ */
+*/
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS Variables ──────────────────────────────────────────── */
+/* CSS Variables  */
 :root {
   --bg:              #080612;
   --bg-surface:      #0d0a1e;
@@ -31,7 +30,7 @@
   --scrollbar-thumb: rgba(124, 58, 237, 0.4);
 }
 
-/* ── Base Resets ────────────────────────────────────────────── */
+/* Base Resets  */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -50,7 +49,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Custom Scrollbar ───────────────────────────────────────── */
+/*Custom Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
 ::-webkit-scrollbar-thumb {
@@ -59,25 +58,25 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(124, 58, 237, 0.6); }
 
-/* ── Selection ──────────────────────────────────────────────── */
+/*Selection  */
 ::selection {
   background: rgba(124, 58, 237, 0.35);
   color: #f8f8ff;
 }
 
-/* ── Focus Ring ─────────────────────────────────────────────── */
+/*Focus Ring  */
 :focus-visible {
   outline: 2px solid rgba(124, 58, 237, 0.7);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* ══════════════════════════════════════════════════════════════
+/*
    COMPONENT LAYER — Reusable patterns via @apply
-   ══════════════════════════════════════════════════════════════ */
+*/
 @layer components {
 
-  /* ── Glass Card ─────────────────────────────────────────────
+  /* Glass Card
      Primary surface for jar cards, modals, panels               */
   .glass-card {
     @apply relative overflow-hidden rounded-3xl;
@@ -100,7 +99,7 @@ body {
     transition: all 0.3s ease;
   }
 
-  /* ── Glass Card (no hover effect) ─────────────────────────── */
+  /*  Glass Card (no hover effect)  */
   .glass-panel {
     @apply relative overflow-hidden rounded-2xl;
     background: linear-gradient(145deg,
@@ -114,7 +113,7 @@ body {
     -webkit-backdrop-filter: blur(12px);
   }
 
-  /* ── Primary Button ─────────────────────────────────────────  */
+  /*  Primary Button   */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
            px-6 py-3 rounded-xl font-body font-semibold text-sm
@@ -134,7 +133,7 @@ body {
     box-shadow: 0 4px 12px rgba(124,58,237,0.3);
   }
 
-  /* ── Secondary (outline) Button ─────────────────────────────  */
+  /*  Secondary (outline) Button  */
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2
            px-6 py-3 rounded-xl font-body font-semibold text-sm
@@ -149,7 +148,7 @@ body {
     color: #d8b4fe;
   }
 
-  /* ── Ghost Button ────────────────────────────────────────────  */
+  /*  Ghost Button   */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2
            px-4 py-2 rounded-lg font-body text-sm
@@ -161,7 +160,7 @@ body {
     background: rgba(255,255,255,0.06);
   }
 
-  /* ── Danger Button ───────────────────────────────────────────  */
+  /*  Danger Button   */
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2
            px-6 py-3 rounded-xl font-body font-semibold text-sm
@@ -175,7 +174,7 @@ body {
     box-shadow: 0 6px 20px rgba(239,68,68,0.45);
   }
 
-  /* ── Form Input ──────────────────────────────────────────────  */
+  /*  Form Input   */
   .input {
     @apply w-full px-4 py-3 rounded-xl text-sm font-body
            text-text-primary placeholder-text-muted
@@ -195,12 +194,12 @@ body {
     box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
   }
 
-  /* ── Textarea ────────────────────────────────────────────────  */
+  /*  Textarea   */
   .textarea {
     @apply input resize-none;
   }
 
-  /* ── Select ──────────────────────────────────────────────────  */
+  /*  Select   */
   .select {
     @apply input appearance-none cursor-pointer;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6080' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -214,12 +213,12 @@ body {
     color: var(--text-primary);
   }
 
-  /* ── Label ───────────────────────────────────────────────────  */
+  /*  Label   */
   .label {
     @apply block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2;
   }
 
-  /* ── Badge ───────────────────────────────────────────────────  */
+  /*  Badge   */
   .badge {
     @apply inline-flex items-center gap-1.5 px-3 py-1
            rounded-full text-xs font-semibold font-body;
@@ -261,7 +260,7 @@ body {
     border: 1px solid rgba(16,185,129,0.2);
   }
 
-  /* ── Progress Bar ────────────────────────────────────────────  */
+  /*  Progress Bar   */
   .progress-track {
     @apply relative w-full h-1.5 rounded-full overflow-hidden;
     background: rgba(255,255,255,0.06);
@@ -276,7 +275,7 @@ body {
     box-shadow: 0 0 8px rgba(16,185,129,0.5);
   }
 
-  /* ── Wallet address display ──────────────────────────────────  */
+  /*  Wallet address display   */
   .wallet-address {
     @apply font-mono text-xs text-text-muted px-2 py-1
            rounded-md cursor-pointer select-all
@@ -285,12 +284,12 @@ body {
     border: 1px solid rgba(255,255,255,0.06);
   }
 
-  /* ── Section heading ──────────────────────────────────────────  */
+  /*  Section heading   */
   .section-heading {
     @apply font-display font-bold text-3xl md:text-4xl text-text-primary leading-tight;
   }
 
-  /* ── Orb (decorative background glow) ───────────────────────── */
+  /*  Orb (decorative background glow)   */
   .orb {
     @apply absolute rounded-full pointer-events-none select-none;
     filter: blur(80px);
@@ -308,13 +307,13 @@ body {
     background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
   }
 
-  /* ── Divider ─────────────────────────────────────────────────  */
+  /* Divider   */
   .divider {
     @apply w-full h-px;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
   }
 
-  /* ── Shimmer skeleton ────────────────────────────────────────  */
+  /*  Shimmer skeleton   */
   .skeleton {
     @apply rounded-lg animate-shimmer;
     background: linear-gradient(90deg,
@@ -325,7 +324,7 @@ body {
     background-size: 200% 100%;
   }
 
-  /* ── Tooltip ─────────────────────────────────────────────────  */
+  /*  Tooltip   */
   .tooltip {
     @apply absolute z-50 px-3 py-1.5 rounded-lg text-xs font-body
            text-text-primary pointer-events-none whitespace-nowrap;
@@ -334,16 +333,16 @@ body {
     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   }
 
-  /* ── Tx hash link ────────────────────────────────────────────  */
+  /*  Tx hash link   */
   .tx-link {
     @apply font-mono text-xs text-primary/70 hover:text-primary
            transition-colors underline underline-offset-2 decoration-dotted;
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* 
    UTILITY LAYER
-   ══════════════════════════════════════════════════════════════ */
+*/
 @layer utilities {
 
   /* Staggered animation delays for list items */

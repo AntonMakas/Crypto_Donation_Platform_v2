@@ -1,12 +1,3 @@
-"""
-Jar model — the core entity in JarFund.
-
-A Jar represents a single fundraising campaign. It is created by a user
-(identified by their wallet address), deployed on-chain, and funded by
-donors who send MATIC to the smart contract.
-
-Database table:  jars_jar
-"""
 from decimal import Decimal
 import uuid
 
@@ -39,14 +30,8 @@ class JarStatus(models.TextChoices):
 
 
 class Jar(models.Model):
-    """
-    A fundraising campaign ("Jar") created by a wallet user.
 
-    Fields mirror the on-chain Jar struct, with additional metadata
-    stored off-chain in PostgreSQL for fast querying and display.
-    """
-
-    # ── Identity ──────────────────────────────────────────────────
+    # Identity 
     id = models.BigAutoField(primary_key=True)
 
     # The on-chain jar ID returned by JarFund.createJar()
@@ -59,7 +44,7 @@ class Jar(models.Model):
         help_text="The uint256 jar ID from the smart contract (set after on-chain confirmation).",
     )
 
-    # ── Creator ───────────────────────────────────────────────────
+    # Creator 
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,          # Never delete jars when user is removed
@@ -67,7 +52,6 @@ class Jar(models.Model):
         help_text="The authenticated user who created this jar.",
     )
 
-    # Denormalized for fast filtering without JOIN
     creator_wallet = models.CharField(
         max_length=42,
         db_index=True,
@@ -75,7 +59,7 @@ class Jar(models.Model):
         help_text="Checksum Ethereum address of the creator (denormalized from creator.wallet_address).",
     )
 
-    # ── Campaign Content ──────────────────────────────────────────
+    # Campaign Content 
     title = models.CharField(
         max_length=120,
         db_index=True,
@@ -106,7 +90,7 @@ class Jar(models.Model):
         help_text="Optional cover image URL.",
     )
 
-    # ── Financial ─────────────────────────────────────────────────
+    # Financial
     target_amount_matic = models.DecimalField(
         max_digits=20,
         decimal_places=6,
@@ -122,14 +106,14 @@ class Jar(models.Model):
         help_text="Total MATIC raised so far (synced from chain).",
     )
 
-    # ── Timeline ──────────────────────────────────────────────────
+    # Timeline 
     deadline = models.DateTimeField(
         db_index=True,
         validators=[validate_future_deadline],
         help_text="Deadline after which the creator can withdraw funds.",
     )
 
-    # ── Status ────────────────────────────────────────────────────
+    # Status 
     status = models.CharField(
         max_length=12,
         choices=JarStatus.choices,
@@ -137,7 +121,7 @@ class Jar(models.Model):
         db_index=True,
     )
 
-    # ── Blockchain metadata ───────────────────────────────────────
+    # Blockchain metadata 
     # Transaction hash of the createJar() call
     creation_tx_hash = models.CharField(
         max_length=66,
@@ -153,13 +137,13 @@ class Jar(models.Model):
         help_text="True once the creation tx has been confirmed on-chain.",
     )
 
-    # ── Stats (cached — refreshed by Celery tasks) ────────────────
+    # Stats (cached — refreshed by Celery tasks)
     donor_count = models.PositiveIntegerField(
         default=0,
         help_text="Number of unique donors (cached from chain/donations table).",
     )
 
-    # ── Timestamps ────────────────────────────────────────────────
+    # Timestamps
     created_at  = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at  = models.DateTimeField(auto_now=True)
 
@@ -198,11 +182,11 @@ class Jar(models.Model):
             ),
         ]
 
-    # ── String representation ──────────────────────────────────────
+    # String representation
     def __str__(self):
         return f"[{self.id}] {self.title} ({self.status}) — {self.creator_wallet[:8]}…"
 
-    # ── Computed properties ───────────────────────────────────────
+    # Computed properties
     @property
     def progress_percentage(self) -> float:
         """Funding progress as a percentage (0.0 – 100.0)."""
@@ -242,7 +226,7 @@ class Jar(models.Model):
         base = settings.BLOCKCHAIN.get("EXPLORER_URL", "https://amoy.polygonscan.com")
         return f"{base}/tx/{self.creation_tx_hash}"
 
-    # ── Business logic helpers ────────────────────────────────────
+    # Business logic helpers
     def sync_status(self) -> bool:
         """
         Re-evaluate and update the jar status based on current state.

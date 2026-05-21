@@ -1,9 +1,4 @@
-"""
-Custom exceptions for the blockchain service layer.
-
-These are raised by BlockchainService and caught by Celery tasks
-to decide whether to retry, log, or give up.
-"""
+#Custom exceptions for the blockchain service layer.
 
 
 class BlockchainError(Exception):

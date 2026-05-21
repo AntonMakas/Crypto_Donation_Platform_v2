@@ -1,16 +1,4 @@
-"""
-Custom exception handler — ensures all API errors return a consistent
-JSON envelope:
-
-    {
-        "success": false,
-        "error": {
-            "code":    "validation_error",
-            "message": "Human-readable summary",
-            "details": { ... }   // field-level errors when available
-        }
-    }
-"""
+# Custom exception hadling for DRF, converting Django exceptions to API-friendly responses with consistent structure and logging
 import logging
 
 from django.core.exceptions import PermissionDenied
@@ -29,10 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 def custom_exception_handler(exc, context):
-    """
-    Call DRF's default handler first, then reformat the response
-    into our standard error envelope.
-    """
     # Convert Django's Http404 and PermissionDenied to DRF equivalents
     if isinstance(exc, Http404):
         exc = APIException("Resource not found.")
@@ -80,7 +64,6 @@ def custom_exception_handler(exc, context):
 
 
 def _extract_message(data) -> str:
-    """Flatten DRF's varied error structure into a single message string."""
     if isinstance(data, dict):
         # e.g. {"detail": "Not found."}
         if "detail" in data:

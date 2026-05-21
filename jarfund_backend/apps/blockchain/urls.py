@@ -1,6 +1,4 @@
 """
-URL configuration for the blockchain app.
-
   POST /api/v1/blockchain/verify/              — trigger tx verification
   GET  /api/v1/blockchain/tx/{tx_hash}/        — tx status
   GET  /api/v1/blockchain/events/              — contract event log

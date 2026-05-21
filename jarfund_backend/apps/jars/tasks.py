@@ -1,15 +1,8 @@
-"""
-Celery tasks for the jars app.
-
-update_expired_jar_statuses — runs every 60 s via beat.
-Finds all Active jars whose deadline has passed and marks them Expired.
-"""
 import logging
 from celery import shared_task
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
-
 
 @shared_task(
     bind=True,

@@ -1,8 +1,3 @@
-"""
-WSGI config for JarFund.
-Exposes the WSGI callable as a module-level variable named ``application``.
-Used by gunicorn in production: gunicorn config.wsgi:application
-"""
 import os
 from django.core.wsgi import get_wsgi_application
 

@@ -36,29 +36,7 @@ class DonateLimitThrottle(UserRateThrottle):
     scope = "donate"
     rate  = "30/minute"
 
-
-# ─────────────────────────────────────────────────────────────────
-#  DONATION CREATE
-# ─────────────────────────────────────────────────────────────────
-
 class DonationCreateView(APIView):
-    """
-    POST /donations/
-
-    Records a newly submitted donation transaction.
-    Immediately queues a Celery verification task.
-
-    Request body:
-        {
-            "jar_id":       1,
-            "donor_wallet": "0x…",
-            "amount_matic": "0.5",
-            "amount_wei":   "500000000000000000",
-            "tx_hash":      "0x…",
-            "message":      "Good luck!",   (optional)
-            "is_anonymous": false           (optional)
-        }
-    """
     permission_classes = [IsAuthenticated]
     throttle_classes   = [DonateLimitThrottle]
 
@@ -108,16 +86,7 @@ class DonationCreateView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-
-# ─────────────────────────────────────────────────────────────────
-#  DONATION READ — ViewSet
-# ─────────────────────────────────────────────────────────────────
-
 class DonationViewSet(ReadOnlyModelViewSet):
-    """
-    GET /donations/      — all donations (filterable)
-    GET /donations/{id}/ — single donation
-    """
     pagination_class   = StandardResultsPagination
     permission_classes = [AllowAny]
 
@@ -159,17 +128,7 @@ class DonationViewSet(ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  MY DONATIONS
-# ─────────────────────────────────────────────────────────────────
-
 class MyDonationsView(APIView):
-    """
-    GET /donations/my/
-    Returns all donations made by the current user's wallet.
-    Includes summary stats.
-    """
     permission_classes = [IsAuthenticated]
 
     @extend_schema(tags=["donations"], summary="Get current user's donations")
@@ -201,17 +160,7 @@ class MyDonationsView(APIView):
         }
         return response
 
-
-# ─────────────────────────────────────────────────────────────────
-#  LEADERBOARD (top donors)
-# ─────────────────────────────────────────────────────────────────
-
 class DonorLeaderboardView(APIView):
-    """
-    GET /donations/leaderboard/?limit=10
-    Returns top donors by total confirmed MATIC donated.
-    Anonymous donations are excluded from leaderboard.
-    """
     permission_classes = [AllowAny]
 
     @extend_schema(tags=["donations"], summary="Top donors leaderboard")

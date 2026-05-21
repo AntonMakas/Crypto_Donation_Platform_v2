@@ -1,6 +1,3 @@
-"""
-Django admin configuration for the donations app.
-"""
 from django.contrib import admin
 from django.utils.html import format_html
 
@@ -9,7 +6,7 @@ from .models import Donation, TxStatus
 
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):
-    # ── List view ──────────────────────────────────────────────────
+    # List view
     list_display = (
         "id", "jar_link", "donor_wallet_short", "amount_matic",
         "tx_status_badge", "is_verified", "confirmations",
@@ -72,7 +69,7 @@ class DonationAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"Manually confirmed {updated} donation(s).")
 
-    # ── Custom display ─────────────────────────────────────────────
+    # Custom display
     @admin.display(description="Jar", ordering="jar__title")
     def jar_link(self, obj):
         from django.urls import reverse

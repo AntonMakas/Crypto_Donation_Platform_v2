@@ -27,7 +27,7 @@ import { JARFUND_ABI }       from '@/lib/wagmi'
 import { cn }                from '@/utils/format'
 import type { JarCategory }  from '@/types'
 
-// ── Schema ────────────────────────────────────────────────────────
+//  Schema 
 
 const schema = z.object({
   title:       z.string().min(3, 'At least 3 characters').max(MAX_TITLE_LENGTH),
@@ -39,7 +39,7 @@ const schema = z.object({
 })
 type FormValues = z.infer<typeof schema>
 
-// ── Steps ─────────────────────────────────────────────────────────
+//  Steps 
 
 const STEPS = [
   { n: 1, label: 'Details'    },
@@ -75,7 +75,7 @@ export default function CreateJarPage() {
   const category = watch('category')
   const emoji    = watch('cover_emoji')
 
-  // ── Not connected ────────────────────────────────────────────
+  //  Not connected 
 
   if (!isConnected) {
     return (
@@ -105,7 +105,7 @@ export default function CreateJarPage() {
     )
   }
 
-  // ── Step 1: Fill details ──────────────────────────────────────
+  //  Step 1: Fill details 
 
   const onSubmitDetails = async (values: FormValues) => {
     const jar = await createJar.mutateAsync({
@@ -120,7 +120,7 @@ export default function CreateJarPage() {
     setStep(2)
   }
 
-  // ── Step 2: Deploy on-chain ───────────────────────────────────
+  //  Step 2: Deploy on-chain 
 
   const deployOnChain = async () => {
     const values = watch()
@@ -148,7 +148,7 @@ export default function CreateJarPage() {
     }
   }
 
-  // ── Step 3: Confirm once receipt arrives ──────────────────────
+  //  Step 3: Confirm once receipt arrives 
 
   const handleConfirm = useCallback(async () => {
     if (!receipt || !createdJarId || !txHash) return
@@ -234,7 +234,7 @@ export default function CreateJarPage() {
 
       <AnimatePresence mode="wait">
 
-        {/* ── STEP 1: Details ──────────────────────────────── */}
+        {/*  Step 1: Details  */}
         {step === 1 && (
           <motion.div key="step1" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
             <form onSubmit={handleSubmit(onSubmitDetails)} className="glass-card p-8 space-y-6">
@@ -318,7 +318,7 @@ export default function CreateJarPage() {
           </motion.div>
         )}
 
-        {/* ── STEP 2: Deploy ────────────────────────────────── */}
+        {/* STEP 2: Deploy  */}
         {step === 2 && (
           <motion.div key="step2" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
             <div className="glass-card p-8 space-y-6 text-center">
@@ -364,7 +364,7 @@ export default function CreateJarPage() {
           </motion.div>
         )}
 
-        {/* ── STEP 3: Confirm ───────────────────────────────── */}
+        {/* STEP 3: Confirm  */}
         {step === 3 && (
           <motion.div key="step3" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
             <div className="glass-card p-8 space-y-6">

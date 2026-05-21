@@ -1,25 +1,6 @@
-"""
-Blockchain models — low-level on-chain record keeping.
-
-TransactionLog  : Immutable audit log of every tx we've ever processed.
-ContractEvent   : Decoded smart contract event logs (JarCreated,
-                  DonationReceived, FundsWithdrawn, JarStatusChanged).
-
-These tables are append-only. Nothing is ever deleted from them —
-they form the immutable audit trail for the platform.
-
-Database tables:
-  blockchain_transactionlog
-  blockchain_contractevent
-"""
 from django.db import models
 
 from apps.jars.validators import validate_wallet_address, validate_tx_hash
-
-
-# ─────────────────────────────────────────────────────────────────
-#  TRANSACTION LOG
-# ─────────────────────────────────────────────────────────────────
 
 class TxType(models.TextChoices):
     CREATE_JAR  = "create_jar",  "Create Jar"
@@ -35,15 +16,7 @@ class TxLogStatus(models.TextChoices):
 
 
 class TransactionLog(models.Model):
-    """
-    Immutable audit log of every Ethereum transaction we process.
-
-    Created as soon as we receive a tx hash from the frontend.
-    Updated by the Celery verification task.
-
-    Never deleted — forms the audit trail.
-    """
-
+    
     # ── Identity ──────────────────────────────────────────────────
     id = models.BigAutoField(primary_key=True)
 
@@ -131,8 +104,6 @@ class TransactionLog(models.Model):
 
     confirmations = models.PositiveIntegerField(default=0)
 
-    # ── Context (polymorphic FK via generic fields) ───────────────
-    # We store these as nullable FKs for flexibility
     jar_id_ref = models.PositiveBigIntegerField(
         null=True, blank=True,
         help_text="ID of the related Jar record, if applicable.",
@@ -142,7 +113,6 @@ class TransactionLog(models.Model):
         help_text="ID of the related Donation record, if applicable.",
     )
 
-    # Raw transaction receipt stored as JSON for debugging
     raw_receipt = models.JSONField(
         null=True,
         blank=True,
@@ -174,10 +144,6 @@ class TransactionLog(models.Model):
         return f"{base}/tx/{self.tx_hash}"
 
 
-# ─────────────────────────────────────────────────────────────────
-#  CONTRACT EVENTS
-# ─────────────────────────────────────────────────────────────────
-
 class EventType(models.TextChoices):
     JAR_CREATED        = "JarCreated",        "Jar Created"
     DONATION_RECEIVED  = "DonationReceived",  "Donation Received"
@@ -186,17 +152,10 @@ class EventType(models.TextChoices):
 
 
 class ContractEvent(models.Model):
-    """
-    Decoded event logs emitted by the JarFund smart contract.
-
-    Populated by the Celery worker after a transaction is confirmed.
-    Provides a queryable history of everything that happened on-chain.
-    """
 
     # ── Identity ──────────────────────────────────────────────────
     id = models.BigAutoField(primary_key=True)
 
-    # The transaction this event belongs to
     tx_log = models.ForeignKey(
         TransactionLog,
         on_delete=models.CASCADE,
@@ -225,11 +184,6 @@ class ContractEvent(models.Model):
 
     block_timestamp = models.DateTimeField(null=True, blank=True)
 
-    # ── Decoded event arguments (from ABI) ────────────────────────
-    # Stored as JSON — structure depends on event_type
-    # e.g. JarCreated:       { jarId, creator, title, targetAmount, deadline }
-    # e.g. DonationReceived: { jarId, donor, amount, newTotal, timestamp }
-    # e.g. FundsWithdrawn:   { jarId, creator, amount, timestamp }
     event_data = models.JSONField(
         default=dict,
         help_text="Decoded event arguments from ABI.",

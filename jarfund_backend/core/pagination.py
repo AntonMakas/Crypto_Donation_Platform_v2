@@ -1,15 +1,9 @@
-"""
-Shared pagination classes used across all API views.
-"""
+# Pagination classes for DRF views
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 
 class StandardResultsPagination(PageNumberPagination):
-    """
-    Default pagination: 12 items per page.
-    Clients can override with ?page_size=N (max 100).
-    """
     page_size            = 12
     page_size_query_param = "page_size"
     max_page_size        = 100
@@ -39,7 +33,6 @@ class StandardResultsPagination(PageNumberPagination):
 
 
 class LargePagination(PageNumberPagination):
-    """For admin/export endpoints — up to 500 results."""
     page_size            = 50
     page_size_query_param = "page_size"
     max_page_size        = 500

@@ -21,7 +21,6 @@ router = DefaultRouter()
 router.register(r"", JarViewSet, basename="jar")
 
 urlpatterns = [
-    # Must come BEFORE router to avoid being swallowed by {pk} pattern
     path("my/", MyJarsView.as_view(), name="my-jars"),
 
     # Router handles: list, create, retrieve, partial_update,

@@ -1,6 +1,4 @@
 """
-Serializers for the users app.
-
 Authentication flow:
   1. GET  /auth/nonce/?wallet=0x…        → returns { nonce }
   2. POST /auth/verify/                  → { wallet, signature } → { access, refresh, user }
@@ -26,11 +24,6 @@ def _checksum(address: str) -> str:
     from web3 import Web3
     return Web3.to_checksum_address(address)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  NONCE REQUEST
-# ─────────────────────────────────────────────────────────────────
-
 class NonceRequestSerializer(serializers.Serializer):
     """
     GET /auth/nonce/?wallet=0x…
@@ -52,19 +45,7 @@ class NonceResponseSerializer(serializers.Serializer):
     nonce   = serializers.CharField()
     message = serializers.CharField(help_text="The full string the user must sign.")
 
-
-# ─────────────────────────────────────────────────────────────────
-#  SIGNATURE VERIFICATION
-# ─────────────────────────────────────────────────────────────────
-
 class WalletVerifySerializer(serializers.Serializer):
-    """
-    POST /auth/verify/
-    Verifies a MetaMask signature and returns JWT tokens.
-
-    The frontend must sign exactly:
-        "Sign in to JarFund: {nonce}"
-    """
     wallet    = serializers.CharField(max_length=42)
     signature = serializers.CharField(max_length=132)
 
@@ -127,16 +108,7 @@ class WalletVerifySerializer(serializers.Serializer):
             "refresh": str(refresh),
         }
 
-
-# ─────────────────────────────────────────────────────────────────
-#  USER PROFILE
-# ─────────────────────────────────────────────────────────────────
-
 class UserPublicSerializer(serializers.ModelSerializer):
-    """
-    Minimal public profile — safe to expose in donation lists, jar cards, etc.
-    Never exposes nonce, email, or internal fields.
-    """
     display_name  = serializers.ReadOnlyField()
     short_wallet  = serializers.SerializerMethodField()
 
@@ -154,10 +126,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """
-    Full profile — returned to the authenticated user only.
-    Includes stats and editable fields.
-    """
     display_name   = serializers.ReadOnlyField()
     short_wallet   = serializers.SerializerMethodField()
     total_donated  = serializers.ReadOnlyField()
@@ -194,7 +162,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
-    """PATCH /profile/ — only username, bio, avatar_url are editable."""
     class Meta:
         model  = User
         fields = ["username", "bio", "avatar_url"]

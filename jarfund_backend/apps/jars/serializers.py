@@ -1,11 +1,3 @@
-"""
-Serializers for the jars app.
-
-  JarListSerializer   — lightweight, used in grids (no donation list)
-  JarDetailSerializer — full jar with recent donations embedded
-  JarCreateSerializer — validates and creates a new jar
-  JarUpdateSerializer — PATCH for creator (metadata only, not financials)
-"""
 from decimal import Decimal
 
 from django.utils import timezone
@@ -14,11 +6,6 @@ from web3 import Web3
 
 from apps.jars.models import Jar, JarStatus, JarCategory
 from apps.jars.validators import validate_wallet_address
-
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR LIST (lightweight — for grid / explore page)
-# ─────────────────────────────────────────────────────────────────
 
 class JarListSerializer(serializers.ModelSerializer):
     progress_percentage   = serializers.ReadOnlyField()
@@ -50,11 +37,6 @@ class JarListSerializer(serializers.ModelSerializer):
             return obj.creator.display_name
         except Exception:
             return obj.creator_wallet[:8] + "…"
-
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR DETAIL (full — includes embedded donation list)
-# ─────────────────────────────────────────────────────────────────
 
 class DonationNestedSerializer(serializers.Serializer):
     """
@@ -95,19 +77,7 @@ class JarDetailSerializer(JarListSerializer):
         qs = obj.donations.order_by("-created_at")[:50]
         return DonationNestedSerializer(qs, many=True).data
 
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR CREATE
-# ─────────────────────────────────────────────────────────────────
-
 class JarCreateSerializer(serializers.ModelSerializer):
-    """
-    POST /jars/
-
-    Accepts the jar metadata from the frontend.
-    The frontend should call this AFTER the on-chain createJar() tx
-    has been submitted (but before confirmation) — passing the tx_hash.
-    """
     creation_tx_hash = serializers.CharField(
         required=False,
         allow_blank=True,
@@ -183,11 +153,6 @@ class JarCreateSerializer(serializers.ModelSerializer):
         )
         return jar
 
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR UPDATE (metadata only — PATCH by creator)
-# ─────────────────────────────────────────────────────────────────
-
 class JarUpdateSerializer(serializers.ModelSerializer):
     """
     PATCH /jars/{id}/
@@ -210,11 +175,6 @@ class JarUpdateSerializer(serializers.ModelSerializer):
             )
         return attrs
 
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR CONFIRM ON-CHAIN (called after createJar tx confirmed)
-# ─────────────────────────────────────────────────────────────────
-
 class JarConfirmSerializer(serializers.Serializer):
     """
     POST /jars/{id}/confirm/
@@ -229,11 +189,6 @@ class JarConfirmSerializer(serializers.Serializer):
         if not re.match(r"^0x[0-9a-fA-F]{64}$", value):
             raise serializers.ValidationError("Invalid transaction hash.")
         return value
-
-
-# ─────────────────────────────────────────────────────────────────
-#  JAR WITHDRAW (record withdrawal tx)
-# ─────────────────────────────────────────────────────────────────
 
 class JarWithdrawSerializer(serializers.Serializer):
     """

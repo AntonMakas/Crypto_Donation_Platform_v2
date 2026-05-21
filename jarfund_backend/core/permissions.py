@@ -1,19 +1,8 @@
-"""
-Custom DRF permissions for JarFund.
-"""
+# Custom permissions for views, including ownership checks and wallet authentication
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 
 
 class IsOwnerOrReadOnly(BasePermission):
-    """
-    Object-level permission:
-    - Read (GET, HEAD, OPTIONS) is allowed for anyone.
-    - Write (POST, PUT, PATCH, DELETE) requires the request user
-      to be the owner of the object.
-
-    The view must pass `obj` to check_object_permissions(), and
-    the model must have an `owner` or `creator` attribute.
-    """
     def has_object_permission(self, request, view, obj):
         # Read-only is allowed for any request
         if request.method in SAFE_METHODS:
@@ -25,9 +14,6 @@ class IsOwnerOrReadOnly(BasePermission):
 
 
 class IsJarCreator(BasePermission):
-    """
-    Allow only the creator of a Jar to modify or withdraw it.
-    """
     message = "Only the jar creator can perform this action."
 
     def has_object_permission(self, request, view, obj):
@@ -35,10 +21,6 @@ class IsJarCreator(BasePermission):
 
 
 class IsWalletAuthenticated(IsAuthenticated):
-    """
-    Extends IsAuthenticated with a check that the user
-    has a verified wallet address on file.
-    """
     message = "Wallet address not verified. Please connect your MetaMask wallet."
 
     def has_permission(self, request, view):
@@ -48,9 +30,6 @@ class IsWalletAuthenticated(IsAuthenticated):
 
 
 class IsAdminOrReadOnly(BasePermission):
-    """
-    Allow read access to anyone; write access only to staff/admins.
-    """
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True

@@ -1,6 +1,4 @@
 """
-Views for the blockchain app.
-
 Endpoints:
   POST /blockchain/verify/           — manually trigger tx verification
   GET  /blockchain/tx/{tx_hash}/     — get tx verification status
@@ -35,11 +33,6 @@ from apps.jars.models import Jar, JarStatus
 from core.pagination import StandardResultsPagination
 
 logger = logging.getLogger(__name__)
-
-
-# ─────────────────────────────────────────────────────────────────
-#  MANUAL TX VERIFICATION TRIGGER
-# ─────────────────────────────────────────────────────────────────
 
 class VerifyThrottle(AnonRateThrottle):
     rate = "20/minute"
@@ -88,17 +81,7 @@ class TxVerifyView(APIView):
             "data": {"tx_hash": tx_hash, "status": "unknown"},
         })
 
-
-# ─────────────────────────────────────────────────────────────────
-#  TX STATUS
-# ─────────────────────────────────────────────────────────────────
-
 class TxStatusView(APIView):
-    """
-    GET /blockchain/tx/{tx_hash}/
-    Returns the current verification status of a transaction.
-    Checks DB first; falls back to live RPC query if not found.
-    """
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -156,7 +139,7 @@ class TxStatusView(APIView):
             }
             return Response({"success": True, "data": data})
 
-        # ── Live RPC fallback ──
+        # Live RPC fallback
         try:
             from apps.blockchain.service import BlockchainService
             svc = BlockchainService()
@@ -200,11 +183,6 @@ class TxStatusView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-
-# ─────────────────────────────────────────────────────────────────
-#  CONTRACT EVENTS
-# ─────────────────────────────────────────────────────────────────
-
 class ContractEventViewSet(ReadOnlyModelViewSet):
     """
     GET /blockchain/events/           — all events (filterable)
@@ -239,17 +217,7 @@ class ContractEventViewSet(ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-
-# ─────────────────────────────────────────────────────────────────
-#  PLATFORM STATS (cached — refreshed by Celery)
-# ─────────────────────────────────────────────────────────────────
-
 class PlatformStatsView(APIView):
-    """
-    GET /blockchain/stats/
-    Platform-wide aggregate statistics.
-    Cached for 60 seconds to avoid hammering the DB on every page load.
-    """
     permission_classes = [AllowAny]
 
     CACHE_KEY = "jarfund_platform_stats"

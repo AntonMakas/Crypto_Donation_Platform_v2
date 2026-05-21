@@ -1,9 +1,7 @@
-// ═══════════════════════════════════════════════════════════════
 //  JarFund — Shared TypeScript Types
 //  Mirror the Django REST API response shapes exactly.
-// ═══════════════════════════════════════════════════════════════
 
-// ── Enums ────────────────────────────────────────────────────────
+// Enums 
 
 export type JarStatus = 'active' | 'completed' | 'expired' | 'withdrawn'
 export type JarCategory =
@@ -13,7 +11,7 @@ export type JarCategory =
 
 export type TxStatus = 'pending' | 'confirmed' | 'failed' | 'replaced'
 
-// ── User / Auth ──────────────────────────────────────────────────
+// User / Auth 
 
 export interface User {
   id:              number
@@ -44,7 +42,7 @@ export interface AuthResponse {
   user:    User
 }
 
-// ── Jar ──────────────────────────────────────────────────────────
+// Jar 
 
 export interface Jar {
   id:                    number
@@ -124,7 +122,7 @@ export interface DonationStats {
   latest_donation_at: string | null
 }
 
-// ── Donation ─────────────────────────────────────────────────────
+// Donation 
 
 export interface Donation {
   id:              number
@@ -175,7 +173,7 @@ export interface LeaderboardEntry {
   donation_count: number
 }
 
-// ── Blockchain ───────────────────────────────────────────────────
+// Blockchain 
 
 export interface TxStatus_ {
   tx_hash:        string
@@ -215,7 +213,7 @@ export interface PlatformStats {
   raised_last_24h:     string
 }
 
-// ── API helpers ──────────────────────────────────────────────────
+// API helpers 
 
 export interface PaginatedResponse<T> {
   count:       number
@@ -243,7 +241,7 @@ export interface ApiError {
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiError
 
-// ── Filter / Query params ─────────────────────────────────────────
+// Filter / Query params 
 
 export interface JarFilters {
   status?:          JarStatus
@@ -259,7 +257,7 @@ export interface JarFilters {
   include_all?:     boolean
 }
 
-// ── UI State ──────────────────────────────────────────────────────
+// UI State 
 
 export interface ToastOptions {
   type:     'success' | 'error' | 'info' | 'loading'

@@ -1,26 +1,19 @@
-// ═══════════════════════════════════════════════════════════════
 //  JarFund — Formatting Utilities
-// ═══════════════════════════════════════════════════════════════
 
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { formatDistanceToNow, format, isPast, differenceInDays } from 'date-fns'
 import { EXPLORER_URL } from '@/lib/constants'
 
-// ── Tailwind class merger ─────────────────────────────────────────
+//  Tailwind class merger 
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))
 }
 
-// ── MATIC / Currency formatting ───────────────────────────────────
+//Currency formatting 
 
-/**
- * Format a MATIC amount for display.
- * @example formatMatic("1.5")        → "1.5 MATIC"
- * @example formatMatic("0.001234")   → "0.0012 MATIC"
- * @example formatMatic("1000.5")     → "1,000.5 MATIC"
- */
+//Format a POL amount for display.
 export function formatMatic(
   value: string | number,
   opts?: { compact?: boolean; decimals?: number; suffix?: boolean }
@@ -47,41 +40,38 @@ export function formatMatic(
   return suffix ? `${formatted} POL` : formatted
 }
 
-/**
- * Parse a MATIC string to a float, returning 0 on failure.
- */
+
+//Parse a POL string to a float, returning 0 on failure.
+
 export function parseMatic(value: string): number {
   const parsed = parseFloat(value)
   return isNaN(parsed) ? 0 : parsed
 }
 
-// ── Ethereum address formatting ───────────────────────────────────
+//  Ethereum address formatting 
 
-/**
- * Shorten a wallet address for display.
- * @example shortAddress("0x71C7656EC7ab88b098defB751B7401B5f6d8976F") → "0x71C7…976F"
- */
+
+//Shorten a wallet address for display.
+
 export function shortAddress(address: string, chars = 4): string {
   if (!address || address === 'Anonymous') return address
   if (address.length < 10) return address
   return `${address.slice(0, chars + 2)}…${address.slice(-chars)}`
 }
 
-/**
- * Check if a string looks like a valid 0x Ethereum address.
- */
+
+//Check if a string looks like a valid 0x Ethereum address.
+
 export function isEthAddress(value: string): boolean {
   return /^0x[0-9a-fA-F]{40}$/.test(value)
 }
 
-/**
- * Check if a string looks like a valid tx hash.
- */
+//Check if a string looks like a valid tx hash.
 export function isTxHash(value: string): boolean {
   return /^0x[0-9a-fA-F]{64}$/.test(value)
 }
 
-// ── Explorer URLs ─────────────────────────────────────────────────
+//  Explorer URLs 
 
 export function explorerTxUrl(hash: string): string {
   return `${EXPLORER_URL}/tx/${hash}`
@@ -91,20 +81,20 @@ export function explorerAddressUrl(address: string): string {
   return `${EXPLORER_URL}/address/${address}`
 }
 
-// ── Date / time formatting ────────────────────────────────────────
+//  Date / time formatting 
 
 /**
- * Human-readable relative time.
- * @example timeAgo("2026-02-28T10:00:00Z") → "2 days ago"
+ * Human-readable relative time
+ * 2026-02-28T10:00:00Z" "2 days ago"
  */
 export function timeAgo(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date
   return formatDistanceToNow(d, { addSuffix: true })
 }
 
-/**
- * Format a deadline as a countdown or "Ended X ago".
- */
+
+//Format a deadline as a countdown
+
 export function formatDeadline(deadline: string): {
   label:     string
   isExpired: boolean
@@ -135,83 +125,79 @@ export function formatDeadline(deadline: string): {
   }
 }
 
-/**
- * Format a datetime for display in cards.
- * @example formatDate("2026-03-01T10:00:00Z") → "Mar 1, 2026"
- */
+
+//Format a datetime for display in cards.
+
 export function formatDate(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date
   return format(d, 'MMM d, yyyy')
 }
 
-/**
- * Format datetime with time.
- * @example formatDateTime("2026-03-01T10:00:00Z") → "Mar 1, 2026 at 10:00 AM"
- */
+
+//Format datetime with time.
+
 export function formatDateTime(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date
   return format(d, "MMM d, yyyy 'at' h:mm a")
 }
 
-// ── Progress helpers ──────────────────────────────────────────────
+// Progress helpers 
 
-/**
- * Clamp progress percentage to 0–100.
- */
+
+//Clamp progress percentage to 0–100.
+
 export function clampProgress(value: number): number {
   return Math.min(100, Math.max(0, value))
 }
 
-/**
- * Return the progress bar colour class based on percentage.
- */
+
+//Return the progress bar colour class based on percentage.
+
 export function progressColor(pct: number): string {
   if (pct >= 100) return 'completed'
   return ''
 }
 
-// ── Number helpers ────────────────────────────────────────────────
+//  Number helpers 
 
-/**
- * Format a large integer with commas.
- * @example formatNumber(12345) → "12,345"
- */
+
+//Format a large integer with commas
+
 export function formatNumber(value: number): string {
   return value.toLocaleString('en-US')
 }
 
-/**
- * Compact-format a number for stat displays.
- * @example compactNumber(15420) → "15.4K"
- */
+
+//Compact-format a number for stat displays
+
 export function compactNumber(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
   if (value >= 1_000)     return `${(value / 1_000).toFixed(1)}K`
   return value.toString()
 }
 
-// ── String helpers ────────────────────────────────────────────────
+//  String helpers 
 
-/**
- * Truncate text with an ellipsis.
- */
+
+//Truncate text with an ellipsis.
+
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return `${text.slice(0, maxLength - 1)}…`
 }
 
-/**
- * Capitalise the first letter.
- */
+
+//Capitalise the first letter.
+
 export function capitalise(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-// ── Clipboard ─────────────────────────────────────────────────────
+//  Clipboard 
 
-/**
- * Copy text to clipboard and return success/failure.
- */
+
+//Copy text to clipboard and return success/failure.
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text)
@@ -234,11 +220,11 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-// ── MATIC → Wei conversion (pure string math, no BigInt rounding) ─
+//  POL → Wei conversion
 
 /**
- * Convert MATIC amount (string) to wei (string) without float precision loss.
- * Relies on viem's parseEther in components that have it; this is a fallback.
+ * Convert POL amount (string) to wei (string) without float precision loss.
+ * Relies on viem's parseEther
  */
 export function maticToWeiString(matic: string): string {
   try {
@@ -251,9 +237,9 @@ export function maticToWeiString(matic: string): string {
   }
 }
 
-/**
- * Convert wei (string) to MATIC (string).
- */
+
+//Convert wei (string) to POL (string).
+
 export function weiToMaticString(wei: string): string {
   try {
     const w   = BigInt(wei)

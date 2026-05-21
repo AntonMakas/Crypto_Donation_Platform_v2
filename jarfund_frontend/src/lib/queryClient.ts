@@ -1,6 +1,4 @@
-// ═══════════════════════════════════════════════════════════════
 //  React Query client configuration
-// ═══════════════════════════════════════════════════════════════
 
 import { QueryClient } from '@tanstack/react-query'
 

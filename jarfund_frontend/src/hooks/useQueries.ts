@@ -1,7 +1,5 @@
-// ═══════════════════════════════════════════════════════════════
 //  JarFund — React Query data hooks
 //  Covers: jars, donations, blockchain stats, tx polling
-// ═══════════════════════════════════════════════════════════════
 
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
@@ -24,7 +22,7 @@ import type {
   PaginatedResponse,
 } from '@/types'
 
-// ── JAR HOOKS ─────────────────────────────────────────────────────
+// JAR HOOKS 
 
 /** Paginated jar list with filtering + search */
 export function useJars(filters?: JarFilters) {
@@ -78,7 +76,7 @@ export function useJarStats(jarId: number | null) {
   })
 }
 
-// ── JAR MUTATIONS ─────────────────────────────────────────────────
+// JAR MUTATIONS 
 
 /** Create a new jar */
 export function useCreateJar() {
@@ -136,7 +134,7 @@ export function useWithdrawJar(jarId: number) {
   })
 }
 
-// ── DONATION HOOKS ────────────────────────────────────────────────
+// DONATION HOOKS 
 
 /** Paginated donations list — optionally scoped to a jar */
 export function useDonations(params?: { jar_id?: number; donor_wallet?: string; tx_status?: string }) {
@@ -165,7 +163,7 @@ export function useLeaderboard(limit = 10) {
   })
 }
 
-// ── DONATION MUTATIONS ────────────────────────────────────────────
+// DONATION MUTATIONS 
 
 /** Submit a donation (called after MetaMask tx submitted) */
 export function useSubmitDonation() {
@@ -182,7 +180,7 @@ export function useSubmitDonation() {
   })
 }
 
-// ── BLOCKCHAIN HOOKS ──────────────────────────────────────────────
+// blockchain hooks 
 
 /** Platform-wide stats — auto-refreshes every 60 s */
 export function usePlatformStats() {

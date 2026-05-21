@@ -1,8 +1,6 @@
-// ═══════════════════════════════════════════════════════════════
 //  wagmi + viem configuration
 //  Chains: Polygon Amoy (testnet) + Polygon Mainnet
 //  Connectors: MetaMask (injected) + WalletConnect
-// ═══════════════════════════════════════════════════════════════
 
 import { createConfig, http } from 'wagmi'
 import { injected, walletConnect } from 'wagmi/connectors'
@@ -12,7 +10,7 @@ import { WALLETCONNECT_PROJECT_ID, RPC_URL } from '@/lib/constants'
 const AMOY_RPC = RPC_URL || 'https://rpc-amoy.polygon.technology'
 const POLYGON_MAINNET_RPC = RPC_URL || 'https://polygon-bor-rpc.publicnode.com'
 
-// ── Define Polygon Amoy testnet ───────────────────────────────────
+// Define Polygon Amoy testnet
 
 export const polygonAmoy = defineChain({
   id:   80002,
@@ -39,7 +37,7 @@ export const polygonMainnet = defineChain({
   },
 })
 
-// ── Connectors ────────────────────────────────────────────────────
+// Connectors 
 
 const connectors = [
   injected({ target: 'metaMask' }),
@@ -48,7 +46,7 @@ const connectors = [
     : []),
 ]
 
-// ── wagmi config ──────────────────────────────────────────────────
+// wagmi config 
 
 export const wagmiConfig = createConfig({
   chains:     [polygonAmoy, polygonMainnet],
